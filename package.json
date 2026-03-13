@@ -6,6 +6,7 @@
   "scripts": {
     "build": "next build",
     "check": "next lint && tsc --noEmit",
+    "db:start": "./start-database.sh",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -22,21 +23,22 @@
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.12.0",
     "drizzle-orm": "^0.41.0",
-    "next": "^15.2.3",
+    "next": "16.1.6",
     "postgres": "^3.4.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.0.15",
     "@types/node": "^20.14.10",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
     "drizzle-kit": "^0.30.5",
     "eslint": "^9.23.0",
-    "eslint-config-next": "^15.2.3",
+    "eslint-config-next": "16.1.6",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-boundaries": "^5.4.0",
     "eslint-plugin-drizzle": "^0.2.3",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
@@ -48,5 +50,11 @@
   "ct3aMetadata": {
     "initVersion": "7.40.0"
   },
-  "packageManager": "pnpm@10.31.0"
+  "packageManager": "pnpm@10.31.0",
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.14",
+      "@types/react-dom": "19.2.3"
+    }
+  }
 }

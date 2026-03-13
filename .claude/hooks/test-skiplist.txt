@@ -1,0 +1,6 @@
+# Files/patterns that don't need vitest tests.
+# One glob pattern per line. Lines starting with # are comments.
+# Examples:
+#   src/lib/constants.ts
+#   src/components/ui/*
+#   src/lib/i18n/*
