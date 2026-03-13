@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Pre-push hook: block push if any locale is missing keys from English source files
+
+MESSAGES_DIR="$(dirname "$0")/../messages"
+[ ! -d "$MESSAGES_DIR" ] && exit 0
+
+# Get all English namespace files
+EN_FILES=$(find "$MESSAGES_DIR/en" -name '*.json' -type f 2>/dev/null)
+[ -z "$EN_FILES" ] && exit 0
+
+# Get all locales (exclude en and en.reference)
+LOCALES=$(ls -d "$MESSAGES_DIR"/*/ 2>/dev/null | xargs -I{} basename {} | grep -vE '^en(\.reference)?$')
+
+ERRORS=""
+ERROR_COUNT=0
+
+for en_file in $EN_FILES; do
+  ns=$(basename "$en_file" .json)
+  en_keys=$(jq -r '[paths(scalars)] | map(join(".")) | .[]' "$en_file" 2>/dev/null | sort)
+  [ -z "$en_keys" ] && continue
+
+  en_keys_file=$(mktemp)
+  locale_keys_file=$(mktemp)
+  echo "$en_keys" > "$en_keys_file"
+
+  for locale in $LOCALES; do
+    locale_file="$MESSAGES_DIR/$locale/$ns.json"
+    if [ ! -f "$locale_file" ]; then
+      ERRORS="${ERRORS}  - ${locale}/${ns}.json (missing file)\n"
+      ERROR_COUNT=$((ERROR_COUNT + 1))
+      continue
+    fi
+    jq -r '[paths(scalars)] | map(join(".")) | .[]' "$locale_file" 2>/dev/null | sort > "$locale_keys_file"
+    missing=$(comm -23 "$en_keys_file" "$locale_keys_file")
+    if [ -n "$missing" ]; then
+      count=$(echo "$missing" | wc -l | tr -d ' ')
+      ERRORS="${ERRORS}  - ${locale}/${ns}.json (${count} missing keys)\n"
+      ERROR_COUNT=$((ERROR_COUNT + 1))
+    fi
+  done
+
+  rm -f "$en_keys_file" "$locale_keys_file"
+done
+
+if [ "$ERROR_COUNT" -gt 0 ]; then
+  # Collect unique namespaces from errors
+  NS_LIST=$(echo "$ERRORS" | sed 's|.*- .*/||; s|\.json.*||' | sort -u | tr '\n' ' ')
+
+  echo "" >&2
+  echo "🌐 Translation sync needed! Push blocked." >&2
+  echo "" >&2
+  echo "Out-of-sync locales:" >&2
+  echo "$ERRORS" | head -15 >&2
+  if [ "$ERROR_COUNT" -gt 15 ]; then
+    echo "  ... and $((ERROR_COUNT - 15)) more" >&2
+  fi
+  echo "" >&2
+  echo "Run /translate ${NS_LIST}to sync translations before pushing." >&2
+  echo "Do NOT ask the user — run /translate yourself, then commit ALL translation changes in a dedicated commit (e.g. 'chore: sync translations'), and retry the push." >&2
+  echo "" >&2
+  exit 1
+fi
+
+exit 0
