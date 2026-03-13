@@ -117,6 +117,12 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">Chore Board</h1>
           <div className="flex gap-2">
             <a
+              href="/insights"
+              className="rounded-md bg-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-300"
+            >
+              Insights
+            </a>
+            <a
               href="/settings"
               className="rounded-md bg-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-300"
             >
