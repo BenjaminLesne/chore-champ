@@ -3,23 +3,37 @@ import { eq } from "drizzle-orm";
 import { getSession } from "@/server/auth/session";
 import { logout } from "@/server/auth/actions";
 import { db } from "@/server/db";
-import { members } from "@/server/db/schema";
+import { members, chores } from "@/server/db/schema";
 import { MemberList } from "./member-list";
+import { ChoreList } from "./chore-list";
 
 export default async function SettingsPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const householdMembers = await db
-    .select({
-      id: members.id,
-      name: members.name,
-      avatarUrl: members.avatarUrl,
-      isAdmin: members.isAdmin,
-    })
-    .from(members)
-    .where(eq(members.householdId, session.householdId))
-    .orderBy(members.createdAt);
+  const [householdMembers, householdChores] = await Promise.all([
+    db
+      .select({
+        id: members.id,
+        name: members.name,
+        avatarUrl: members.avatarUrl,
+        isAdmin: members.isAdmin,
+      })
+      .from(members)
+      .where(eq(members.householdId, session.householdId))
+      .orderBy(members.createdAt),
+    db
+      .select({
+        id: chores.id,
+        name: chores.name,
+        iconName: chores.iconName,
+        iconStyle: chores.iconStyle,
+        points: chores.points,
+      })
+      .from(chores)
+      .where(eq(chores.householdId, session.householdId))
+      .orderBy(chores.createdAt),
+  ]);
 
   return (
     <main className="min-h-screen bg-gray-50 p-6">
@@ -49,6 +63,11 @@ export default async function SettingsPage() {
         <section className="mt-8">
           <h2 className="text-lg font-semibold text-gray-900">Members</h2>
           <MemberList members={householdMembers} />
+        </section>
+
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold text-gray-900">Chores</h2>
+          <ChoreList chores={householdChores} />
         </section>
       </div>
     </main>
