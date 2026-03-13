@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
-import { eq, and, gte, desc } from "drizzle-orm";
+import { eq, and, gte, desc, sql } from "drizzle-orm";
 import { getSession } from "@/server/auth/session";
 import { logout } from "@/server/auth/actions";
 import { db } from "@/server/db";
 import { chores, members, choreLogs } from "@/server/db/schema";
 import { ChoreBoard } from "./chore-board";
+import { Scoreboard } from "./scoreboard";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -14,49 +15,70 @@ export default async function DashboardPage() {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [householdChores, householdMembers, recentLogs] = await Promise.all([
-    db
-      .select({
-        id: chores.id,
-        name: chores.name,
-        iconName: chores.iconName,
-        iconStyle: chores.iconStyle,
-        points: chores.points,
-      })
-      .from(chores)
-      .where(eq(chores.householdId, session.householdId))
-      .orderBy(chores.createdAt),
-    db
-      .select({
-        id: members.id,
-        name: members.name,
-      })
-      .from(members)
-      .where(eq(members.householdId, session.householdId))
-      .orderBy(members.createdAt),
-    db
-      .select({
-        id: choreLogs.id,
-        choreId: choreLogs.choreId,
-        memberId: choreLogs.memberId,
-        pointsEarned: choreLogs.pointsEarned,
-        loggedAt: choreLogs.loggedAt,
-      })
-      .from(choreLogs)
-      .innerJoin(members, eq(choreLogs.memberId, members.id))
-      .where(
-        and(
-          eq(members.householdId, session.householdId),
-          gte(choreLogs.loggedAt, monthStart),
-        ),
-      )
-      .orderBy(desc(choreLogs.loggedAt))
-      .limit(20),
-  ]);
+  const [householdChores, householdMembers, recentLogs, monthlyScores] =
+    await Promise.all([
+      db
+        .select({
+          id: chores.id,
+          name: chores.name,
+          iconName: chores.iconName,
+          iconStyle: chores.iconStyle,
+          points: chores.points,
+        })
+        .from(chores)
+        .where(eq(chores.householdId, session.householdId))
+        .orderBy(chores.createdAt),
+      db
+        .select({
+          id: members.id,
+          name: members.name,
+        })
+        .from(members)
+        .where(eq(members.householdId, session.householdId))
+        .orderBy(members.createdAt),
+      db
+        .select({
+          id: choreLogs.id,
+          choreId: choreLogs.choreId,
+          memberId: choreLogs.memberId,
+          pointsEarned: choreLogs.pointsEarned,
+          loggedAt: choreLogs.loggedAt,
+        })
+        .from(choreLogs)
+        .innerJoin(members, eq(choreLogs.memberId, members.id))
+        .where(
+          and(
+            eq(members.householdId, session.householdId),
+            gte(choreLogs.loggedAt, monthStart),
+          ),
+        )
+        .orderBy(desc(choreLogs.loggedAt))
+        .limit(20),
+      db
+        .select({
+          memberId: members.id,
+          memberName: members.name,
+          totalPoints:
+            sql<number>`coalesce(sum(${choreLogs.pointsEarned}), 0)`.as(
+              "total_points",
+            ),
+        })
+        .from(members)
+        .leftJoin(
+          choreLogs,
+          and(
+            eq(choreLogs.memberId, members.id),
+            gte(choreLogs.loggedAt, monthStart),
+          ),
+        )
+        .where(eq(members.householdId, session.householdId))
+        .groupBy(members.id, members.name)
+        .orderBy(sql`total_points desc`),
+    ]);
 
   return (
     <main className="min-h-screen bg-gray-50 p-4 sm:p-6">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Chore Board</h1>
           <div className="flex gap-2">
@@ -77,13 +99,18 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <section className="mt-6">
-          <ChoreBoard
-            chores={householdChores}
-            members={householdMembers}
-            recentLogs={recentLogs}
-          />
-        </section>
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
+          <section>
+            <ChoreBoard
+              chores={householdChores}
+              members={householdMembers}
+              recentLogs={recentLogs}
+            />
+          </section>
+          <aside>
+            <Scoreboard scores={monthlyScores} />
+          </aside>
+        </div>
       </div>
     </main>
   );
