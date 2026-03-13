@@ -19,7 +19,8 @@
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "ralph:claude": "./scripts/ralph/ralph.sh --tool claude"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.12.0",
@@ -55,7 +56,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "next lint --fix --file",
+      "eslint --fix",
       "prettier --write"
     ],
     "*.{js,jsx,mdx,json,css}": [
