@@ -6,3 +6,9 @@ export const logChoreSchema = z.object({
 });
 
 export type LogChoreInput = z.infer<typeof logChoreSchema>;
+
+export const undoChoreLogSchema = z.object({
+  logId: z.number().int().positive(),
+});
+
+export type UndoChoreLogInput = z.infer<typeof undoChoreLogSchema>;

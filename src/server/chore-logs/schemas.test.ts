@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { logChoreSchema } from "./schemas.ts";
+import { logChoreSchema, undoChoreLogSchema } from "./schemas.ts";
 
 void describe("logChoreSchema", () => {
   void it("accepts valid input", () => {
@@ -25,6 +25,28 @@ void describe("logChoreSchema", () => {
 
   void it("rejects non-positive memberId", () => {
     const result = logChoreSchema.safeParse({ choreId: 1, memberId: -1 });
+    assert.strictEqual(result.success, false);
+  });
+});
+
+void describe("undoChoreLogSchema", () => {
+  void it("accepts valid logId", () => {
+    const result = undoChoreLogSchema.safeParse({ logId: 1 });
+    assert.strictEqual(result.success, true);
+  });
+
+  void it("rejects missing logId", () => {
+    const result = undoChoreLogSchema.safeParse({});
+    assert.strictEqual(result.success, false);
+  });
+
+  void it("rejects non-positive logId", () => {
+    const result = undoChoreLogSchema.safeParse({ logId: 0 });
+    assert.strictEqual(result.success, false);
+  });
+
+  void it("rejects non-integer logId", () => {
+    const result = undoChoreLogSchema.safeParse({ logId: 1.5 });
     assert.strictEqual(result.success, false);
   });
 });

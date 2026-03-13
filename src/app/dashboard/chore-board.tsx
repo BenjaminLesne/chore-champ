@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { getChoreIcon } from "@/components/icons";
-import { logChore } from "@/server/chore-logs/actions";
+import { logChore, undoChoreLog } from "@/server/chore-logs/actions";
 
 interface Chore {
   id: number;
@@ -36,7 +36,12 @@ export function ChoreBoard({
 }) {
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [confirmChore, setConfirmChore] = useState<Chore | null>(null);
+  const [undoLogId, setUndoLogId] = useState<number | null>(null);
   const [state, formAction, isPending] = useActionState(logChore, {});
+  const [undoState, undoFormAction, isUndoing] = useActionState(
+    undoChoreLog,
+    {},
+  );
 
   if (chores.length === 0) {
     return (
@@ -95,9 +100,9 @@ export function ChoreBoard({
       </div>
 
       {/* Error display */}
-      {state.error && (
+      {(state.error ?? undoState.error) && (
         <p className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {state.error}
+          {state.error ?? undoState.error}
         </p>
       )}
 
@@ -205,10 +210,49 @@ export function ChoreBoard({
                     <span className="text-xs text-gray-400">
                       {formatRelativeTime(log.loggedAt)}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => setUndoLogId(log.id)}
+                      className="rounded px-2 py-1 text-xs text-red-500 hover:bg-red-50 hover:text-red-700"
+                    >
+                      Undo
+                    </button>
                   </div>
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Undo confirmation dialog */}
+      {undoLogId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900">Undo Log</h3>
+            <p className="mt-2 text-gray-600">
+              Are you sure you want to undo this chore log? The points will be
+              deducted.
+            </p>
+            <div className="mt-4 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setUndoLogId(null)}
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <form action={undoFormAction} onSubmit={() => setUndoLogId(null)}>
+                <input type="hidden" name="logId" value={undoLogId} />
+                <button
+                  type="submit"
+                  disabled={isUndoing}
+                  className="rounded-lg bg-red-600 px-6 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isUndoing ? "Undoing..." : "Undo"}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}

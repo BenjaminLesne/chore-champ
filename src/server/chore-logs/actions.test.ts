@@ -6,4 +6,9 @@ void describe("chore-logs actions", () => {
     const mod = await import("./actions.ts");
     assert.strictEqual(typeof mod.logChore, "function");
   });
+
+  void it("exports undoChoreLog action", async () => {
+    const mod = await import("./actions.ts");
+    assert.strictEqual(typeof mod.undoChoreLog, "function");
+  });
 });
