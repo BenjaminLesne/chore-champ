@@ -7,7 +7,7 @@ import {
   adminAccounts,
   chores,
   choreLogs,
-} from "./schema";
+} from "./schema.ts";
 
 void describe("schema exports", () => {
   void it("exports all required tables", () => {
