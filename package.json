@@ -18,7 +18,8 @@
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.12.0",
@@ -40,6 +41,8 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-boundaries": "^5.4.0",
     "eslint-plugin-drizzle": "^0.2.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.3",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
@@ -49,6 +52,15 @@
   },
   "ct3aMetadata": {
     "initVersion": "7.40.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "next lint --fix --file",
+      "prettier --write"
+    ],
+    "*.{js,jsx,mdx,json,css}": [
+      "prettier --write"
+    ]
   },
   "packageManager": "pnpm@10.31.0",
   "pnpm": {
