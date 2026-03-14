@@ -5,16 +5,33 @@ import { logout } from "@/server/auth/actions";
 import { db } from "@/server/db";
 import { chores, members, choreLogs } from "@/server/db/schema";
 import { ChoreBoard } from "./chore-board";
+import { LogChoreButton } from "./log-chore-button";
+import { CreateChoreButton } from "./create-chore-button";
 import { Scoreboard } from "./scoreboard";
 import { PastWinners } from "./past-winners";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  // Start of current month
+  const params = await searchParams;
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  let monthStart: Date;
+  let monthEnd: Date;
+
+  if (params.month && /^\d{4}-\d{2}$/.test(params.month)) {
+    const parts = params.month.split("-").map(Number);
+    const [y = 0, m = 0] = parts;
+    monthStart = new Date(y, m - 1, 1);
+    monthEnd = new Date(y, m, 1);
+  } else {
+    monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  }
 
   const [
     householdChores,
@@ -56,6 +73,7 @@ export default async function DashboardPage() {
         and(
           eq(members.householdId, session.householdId),
           gte(choreLogs.loggedAt, monthStart),
+          lt(choreLogs.loggedAt, monthEnd),
         ),
       )
       .orderBy(desc(choreLogs.loggedAt)),
@@ -74,6 +92,7 @@ export default async function DashboardPage() {
         and(
           eq(choreLogs.memberId, members.id),
           gte(choreLogs.loggedAt, monthStart),
+          lt(choreLogs.loggedAt, monthEnd),
         ),
       )
       .where(eq(members.householdId, session.householdId))
@@ -145,9 +164,14 @@ export default async function DashboardPage() {
               members={householdMembers}
               recentLogs={recentLogs}
               monthlyScores={monthlyScores}
+              currentMonth={`${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, "0")}`}
             />
           </section>
           <aside className="space-y-6">
+            <div className="space-y-2">
+              <LogChoreButton />
+              <CreateChoreButton />
+            </div>
             <Scoreboard scores={monthlyScores} />
             <PastWinners monthlyData={pastMonthlyData} />
           </aside>

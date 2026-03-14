@@ -55,6 +55,7 @@ export async function createChore(
   });
 
   revalidatePath("/settings");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 

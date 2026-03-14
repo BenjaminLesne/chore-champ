@@ -11,7 +11,15 @@ vi.mock("nuqs", () => ({
   parseAsInteger: {},
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 const { ChoreBoard } = await import("./chore-board.tsx");
+
+const now = new Date();
+const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
 const members = [
   { id: 1, name: "Alice" },
@@ -48,19 +56,21 @@ describe("ChoreBoard", () => {
         members={members}
         recentLogs={[]}
         monthlyScores={monthlyScores}
+        currentMonth={currentMonth}
       />,
     );
     await expect.element(screen.getByText(/No chores yet/)).toBeVisible();
     await expect.element(screen.getByText("Settings")).toBeVisible();
   });
 
-  it("renders member columns with names and points", async () => {
+  it("renders member column headers with names and points", async () => {
     const screen = await render(
       <ChoreBoard
         chores={chores}
         members={members}
         recentLogs={[]}
         monthlyScores={monthlyScores}
+        currentMonth={currentMonth}
       />,
     );
     await expect.element(screen.getByText("Alice")).toBeVisible();
@@ -69,20 +79,22 @@ describe("ChoreBoard", () => {
     await expect.element(screen.getByText("32 pts")).toBeVisible();
   });
 
-  it("shows 'No chores yet' in empty member columns", async () => {
+  it("shows empty month message when no logs", async () => {
     const screen = await render(
       <ChoreBoard
         chores={chores}
         members={members}
         recentLogs={[]}
         monthlyScores={monthlyScores}
+        currentMonth={currentMonth}
       />,
     );
-    const empties = screen.getByText("No chores yet");
-    await expect.element(empties.first()).toBeVisible();
+    await expect
+      .element(screen.getByText("No chores logged this month"))
+      .toBeVisible();
   });
 
-  it("renders icon chips for recent logs in member columns", async () => {
+  it("renders icon chips grouped by day for recent logs", async () => {
     const recentLogs = [
       {
         id: 1,
@@ -105,24 +117,26 @@ describe("ChoreBoard", () => {
         members={members}
         recentLogs={recentLogs}
         monthlyScores={monthlyScores}
+        currentMonth={currentMonth}
       />,
     );
-    // Icon chips should have title attributes
+    await expect.element(screen.getByText("Today")).toBeVisible();
     await expect.element(screen.getByTitle("Dishes")).toBeVisible();
     await expect.element(screen.getByTitle("Laundry")).toBeVisible();
   });
 
-  it("renders FAB button", async () => {
+  it("renders month selector with prev/next buttons", async () => {
     const screen = await render(
       <ChoreBoard
         chores={chores}
         members={members}
         recentLogs={[]}
         monthlyScores={monthlyScores}
+        currentMonth={currentMonth}
       />,
     );
     await expect
-      .element(screen.getByRole("button", { name: "Log Chore" }))
+      .element(screen.getByRole("button", { name: "Previous month" }))
       .toBeVisible();
   });
 
@@ -133,6 +147,7 @@ describe("ChoreBoard", () => {
         members={[]}
         recentLogs={[]}
         monthlyScores={[]}
+        currentMonth={currentMonth}
       />,
     );
     await expect.element(screen.getByText(/No members yet/)).toBeVisible();
