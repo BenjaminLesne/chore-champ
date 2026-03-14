@@ -1,73 +1,62 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, expect, it } from "vitest";
 import {
   createMemberSchema,
   updateMemberSchema,
   deleteMemberSchema,
 } from "./schemas.ts";
 
-void describe("createMemberSchema", () => {
-  void it("accepts valid input with name only", () => {
-    const result = createMemberSchema.safeParse({ name: "Alice" });
-    assert.strictEqual(result.success, true);
+describe("createMemberSchema", () => {
+  it("accepts valid input with name only", () => {
+    expect(createMemberSchema.safeParse({ name: "Alice" }).success).toBe(true);
   });
 
-  void it("accepts valid input with name and avatarUrl", () => {
-    const result = createMemberSchema.safeParse({
-      name: "Alice",
-      avatarUrl: "https://example.com/avatar.png",
-    });
-    assert.strictEqual(result.success, true);
+  it("accepts valid input with name and avatarUrl", () => {
+    expect(
+      createMemberSchema.safeParse({
+        name: "Alice",
+        avatarUrl: "https://example.com/avatar.png",
+      }).success,
+    ).toBe(true);
   });
 
-  void it("accepts empty string for avatarUrl", () => {
-    const result = createMemberSchema.safeParse({
-      name: "Alice",
-      avatarUrl: "",
-    });
-    assert.strictEqual(result.success, true);
+  it("accepts empty string for avatarUrl", () => {
+    expect(
+      createMemberSchema.safeParse({ name: "Alice", avatarUrl: "" }).success,
+    ).toBe(true);
   });
 
-  void it("rejects empty name", () => {
-    const result = createMemberSchema.safeParse({ name: "" });
-    assert.strictEqual(result.success, false);
+  it("rejects empty name", () => {
+    expect(createMemberSchema.safeParse({ name: "" }).success).toBe(false);
   });
 
-  void it("rejects invalid avatarUrl", () => {
-    const result = createMemberSchema.safeParse({
-      name: "Alice",
-      avatarUrl: "not-a-url",
-    });
-    assert.strictEqual(result.success, false);
+  it("rejects invalid avatarUrl", () => {
+    expect(
+      createMemberSchema.safeParse({ name: "Alice", avatarUrl: "not-a-url" })
+        .success,
+    ).toBe(false);
   });
 });
 
-void describe("updateMemberSchema", () => {
-  void it("accepts valid input", () => {
-    const result = updateMemberSchema.safeParse({
-      memberId: 1,
-      name: "Bob",
-    });
-    assert.strictEqual(result.success, true);
+describe("updateMemberSchema", () => {
+  it("accepts valid input", () => {
+    expect(
+      updateMemberSchema.safeParse({ memberId: 1, name: "Bob" }).success,
+    ).toBe(true);
   });
 
-  void it("rejects non-positive memberId", () => {
-    const result = updateMemberSchema.safeParse({
-      memberId: 0,
-      name: "Bob",
-    });
-    assert.strictEqual(result.success, false);
+  it("rejects non-positive memberId", () => {
+    expect(
+      updateMemberSchema.safeParse({ memberId: 0, name: "Bob" }).success,
+    ).toBe(false);
   });
 });
 
-void describe("deleteMemberSchema", () => {
-  void it("accepts valid memberId", () => {
-    const result = deleteMemberSchema.safeParse({ memberId: 1 });
-    assert.strictEqual(result.success, true);
+describe("deleteMemberSchema", () => {
+  it("accepts valid memberId", () => {
+    expect(deleteMemberSchema.safeParse({ memberId: 1 }).success).toBe(true);
   });
 
-  void it("rejects missing memberId", () => {
-    const result = deleteMemberSchema.safeParse({});
-    assert.strictEqual(result.success, false);
+  it("rejects missing memberId", () => {
+    expect(deleteMemberSchema.safeParse({}).success).toBe(false);
   });
 });

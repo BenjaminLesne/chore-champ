@@ -1,9 +1,8 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, expect, it } from "vitest";
 
-void describe("Scoreboard", () => {
-  void it("exports Scoreboard component", async () => {
+describe("Scoreboard", () => {
+  it("exports Scoreboard component", async () => {
     const mod = await import("./scoreboard.tsx");
-    assert.strictEqual(typeof mod.Scoreboard, "function");
+    expect(mod.Scoreboard).toBeTypeOf("function");
   });
 });

@@ -1,9 +1,8 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, expect, it } from "vitest";
 
-void describe("PastWinners", () => {
-  void it("exports PastWinners component", async () => {
+describe("PastWinners", () => {
+  it("exports PastWinners component", async () => {
     const mod = await import("./past-winners.tsx");
-    assert.ok(typeof mod.PastWinners === "function");
+    expect(mod.PastWinners).toBeTypeOf("function");
   });
 });

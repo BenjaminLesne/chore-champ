@@ -1,52 +1,48 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, expect, it } from "vitest";
 import { logChoreSchema, undoChoreLogSchema } from "./schemas.ts";
 
-void describe("logChoreSchema", () => {
-  void it("accepts valid input", () => {
-    const result = logChoreSchema.safeParse({ choreId: 1, memberId: 2 });
-    assert.strictEqual(result.success, true);
+describe("logChoreSchema", () => {
+  it("accepts valid input", () => {
+    expect(logChoreSchema.safeParse({ choreId: 1, memberId: 2 }).success).toBe(
+      true,
+    );
   });
 
-  void it("rejects missing choreId", () => {
-    const result = logChoreSchema.safeParse({ memberId: 2 });
-    assert.strictEqual(result.success, false);
+  it("rejects missing choreId", () => {
+    expect(logChoreSchema.safeParse({ memberId: 2 }).success).toBe(false);
   });
 
-  void it("rejects missing memberId", () => {
-    const result = logChoreSchema.safeParse({ choreId: 1 });
-    assert.strictEqual(result.success, false);
+  it("rejects missing memberId", () => {
+    expect(logChoreSchema.safeParse({ choreId: 1 }).success).toBe(false);
   });
 
-  void it("rejects non-positive choreId", () => {
-    const result = logChoreSchema.safeParse({ choreId: 0, memberId: 1 });
-    assert.strictEqual(result.success, false);
+  it.each([0, -1])("rejects non-positive choreId=%i", (choreId) => {
+    expect(logChoreSchema.safeParse({ choreId, memberId: 1 }).success).toBe(
+      false,
+    );
   });
 
-  void it("rejects non-positive memberId", () => {
-    const result = logChoreSchema.safeParse({ choreId: 1, memberId: -1 });
-    assert.strictEqual(result.success, false);
+  it("rejects non-positive memberId", () => {
+    expect(logChoreSchema.safeParse({ choreId: 1, memberId: -1 }).success).toBe(
+      false,
+    );
   });
 });
 
-void describe("undoChoreLogSchema", () => {
-  void it("accepts valid logId", () => {
-    const result = undoChoreLogSchema.safeParse({ logId: 1 });
-    assert.strictEqual(result.success, true);
+describe("undoChoreLogSchema", () => {
+  it("accepts valid logId", () => {
+    expect(undoChoreLogSchema.safeParse({ logId: 1 }).success).toBe(true);
   });
 
-  void it("rejects missing logId", () => {
-    const result = undoChoreLogSchema.safeParse({});
-    assert.strictEqual(result.success, false);
+  it("rejects missing logId", () => {
+    expect(undoChoreLogSchema.safeParse({}).success).toBe(false);
   });
 
-  void it("rejects non-positive logId", () => {
-    const result = undoChoreLogSchema.safeParse({ logId: 0 });
-    assert.strictEqual(result.success, false);
+  it("rejects non-positive logId", () => {
+    expect(undoChoreLogSchema.safeParse({ logId: 0 }).success).toBe(false);
   });
 
-  void it("rejects non-integer logId", () => {
-    const result = undoChoreLogSchema.safeParse({ logId: 1.5 });
-    assert.strictEqual(result.success, false);
+  it("rejects non-integer logId", () => {
+    expect(undoChoreLogSchema.safeParse({ logId: 1.5 }).success).toBe(false);
   });
 });

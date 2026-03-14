@@ -1,10 +1,9 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, expect, it } from "vitest";
+import { WashingMachineEmpty, WashingMachineFill } from "./washing-machine.tsx";
 
-void describe("WashingMachine icons", () => {
-  void it("exports empty and fill variants", async () => {
-    const mod = await import("./washing-machine.tsx");
-    assert.ok(typeof mod.WashingMachineEmpty === "function");
-    assert.ok(typeof mod.WashingMachineFill === "function");
+describe("WashingMachine icons", () => {
+  it("exports empty and fill variants", () => {
+    expect(WashingMachineEmpty).toBeTypeOf("function");
+    expect(WashingMachineFill).toBeTypeOf("function");
   });
 });

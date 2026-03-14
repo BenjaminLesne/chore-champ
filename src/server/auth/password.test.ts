@@ -1,26 +1,25 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, expect, it } from "vitest";
 import { hashPassword, verifyPassword } from "./password.ts";
 
-void describe("password utilities", () => {
-  void it("hashes a password and verifies it correctly", async () => {
+describe("password utilities", () => {
+  it("hashes and verifies a password correctly", async () => {
     const password = "test-password-123";
     const hash = await hashPassword(password);
 
-    assert.notStrictEqual(hash, password);
-    assert.strictEqual(await verifyPassword(password, hash), true);
+    expect(hash).not.toBe(password);
+    expect(await verifyPassword(password, hash)).toBe(true);
   });
 
-  void it("rejects an incorrect password", async () => {
+  it("rejects an incorrect password", async () => {
     const hash = await hashPassword("correct-password");
-    assert.strictEqual(await verifyPassword("wrong-password", hash), false);
+    expect(await verifyPassword("wrong-password", hash)).toBe(false);
   });
 
-  void it("produces different hashes for the same password", async () => {
+  it("produces different hashes for the same password (salt)", async () => {
     const password = "same-password";
     const hash1 = await hashPassword(password);
     const hash2 = await hashPassword(password);
 
-    assert.notStrictEqual(hash1, hash2);
+    expect(hash1).not.toBe(hash2);
   });
 });

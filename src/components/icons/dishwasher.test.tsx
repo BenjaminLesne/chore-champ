@@ -1,10 +1,9 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, expect, it } from "vitest";
+import { DishwasherEmpty, DishwasherFill } from "./dishwasher.tsx";
 
-void describe("Dishwasher icons", () => {
-  void it("exports empty and fill variants", async () => {
-    const mod = await import("./dishwasher.tsx");
-    assert.ok(typeof mod.DishwasherEmpty === "function");
-    assert.ok(typeof mod.DishwasherFill === "function");
+describe("Dishwasher icons", () => {
+  it("exports empty and fill variants", () => {
+    expect(DishwasherEmpty).toBeTypeOf("function");
+    expect(DishwasherFill).toBeTypeOf("function");
   });
 });

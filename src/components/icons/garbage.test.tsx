@@ -1,10 +1,9 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, expect, it } from "vitest";
+import { GarbageEmpty, GarbageFill } from "./garbage.tsx";
 
-void describe("Garbage icons", () => {
-  void it("exports empty and fill variants", async () => {
-    const mod = await import("./garbage.tsx");
-    assert.ok(typeof mod.GarbageEmpty === "function");
-    assert.ok(typeof mod.GarbageFill === "function");
+describe("Garbage icons", () => {
+  it("exports empty and fill variants", () => {
+    expect(GarbageEmpty).toBeTypeOf("function");
+    expect(GarbageFill).toBeTypeOf("function");
   });
 });

@@ -1,6 +1,4 @@
-import assert from "node:assert";
-import { describe, it } from "node:test";
-
+import { describe, expect, it } from "vitest";
 import {
   households,
   members,
@@ -9,12 +7,12 @@ import {
   choreLogs,
 } from "./schema.ts";
 
-void describe("schema exports", () => {
-  void it("exports all required tables", () => {
-    assert.ok(households);
-    assert.ok(members);
-    assert.ok(adminAccounts);
-    assert.ok(chores);
-    assert.ok(choreLogs);
+describe("schema exports", () => {
+  it("exports all required tables", () => {
+    expect(households).toBeDefined();
+    expect(members).toBeDefined();
+    expect(adminAccounts).toBeDefined();
+    expect(chores).toBeDefined();
+    expect(choreLogs).toBeDefined();
   });
 });

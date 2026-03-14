@@ -1,9 +1,8 @@
-import { describe, it } from "node:test";
-import * as assert from "node:assert";
+import { describe, expect, it } from "vitest";
 
-void describe("InsightsCharts", () => {
-  void it("exports InsightsCharts component", async () => {
+describe("InsightsCharts", () => {
+  it("exports InsightsCharts component", async () => {
     const mod = await import("./insights-charts.tsx");
-    assert.ok(typeof mod.InsightsCharts === "function");
+    expect(mod.InsightsCharts).toBeTypeOf("function");
   });
 });
