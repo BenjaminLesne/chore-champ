@@ -1,7 +1,9 @@
 import "@/styles/globals.css";
 
+import { env } from "@/env";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
+import Script from "next/script";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 export const metadata: Metadata = {
@@ -21,6 +23,15 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable}`}>
+      <head>
+        {env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
+      </head>
       <body>
         <NuqsAdapter>{children}</NuqsAdapter>
       </body>
