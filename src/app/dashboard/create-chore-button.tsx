@@ -6,20 +6,16 @@ import { IconPicker } from "@/components/icon-picker";
 
 export function CreateChoreButton() {
   const [open, setOpen] = useState(false);
-  const initialState: ChoreActionState = {};
   const [state, formAction, pending] = useActionState(
-    createChore,
-    initialState,
+    async (prevState: ChoreActionState, formData: FormData) => {
+      const result = await createChore(prevState, formData);
+      if (result.success) {
+        setOpen(false);
+      }
+      return result;
+    },
+    {},
   );
-  const [prevPending, setPrevPending] = useState(false);
-
-  // Close modal when action completes successfully (adjust state during render)
-  if (prevPending && !pending && state.success) {
-    setOpen(false);
-  }
-  if (prevPending !== pending) {
-    setPrevPending(pending);
-  }
 
   return (
     <>

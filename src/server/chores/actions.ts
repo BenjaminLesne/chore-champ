@@ -28,9 +28,9 @@ export async function createChore(
   _prevState: ChoreActionState,
   formData: FormData,
 ): Promise<ChoreActionState> {
-  const admin = await requireAdmin();
-  if (!admin) {
-    return { error: "You must be logged in as an admin" };
+  const session = await getSession();
+  if (!session) {
+    return { error: "You must be logged in" };
   }
 
   const parsed = createChoreSchema.safeParse({
@@ -51,7 +51,7 @@ export async function createChore(
     iconName,
     iconStyle,
     points,
-    householdId: admin.householdId,
+    householdId: session.householdId,
   });
 
   revalidatePath("/settings");

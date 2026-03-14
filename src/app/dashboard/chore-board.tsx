@@ -4,7 +4,11 @@ import { useActionState, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { getChoreIcon } from "@/components/icons";
-import { logChore, undoChoreLog } from "@/server/chore-logs/actions";
+import {
+  logChore,
+  undoChoreLog,
+  type ChoreLogActionState,
+} from "@/server/chore-logs/actions";
 
 interface Chore {
   id: number;
@@ -109,22 +113,22 @@ export function ChoreBoard({
   const [confirmChore, setConfirmChore] = useState<Chore | null>(null);
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
   const [logDate, setLogDate] = useState(todayString);
-  const [state, formAction, isPending] = useActionState(logChore, {});
+  const [state, formAction, isPending] = useActionState(
+    async (prevState: ChoreLogActionState, formData: FormData) => {
+      const result = await logChore(prevState, formData);
+      if (result.success) {
+        setConfirmChore(null);
+        void setLogParam(null);
+        setLogDate(todayString());
+      }
+      return result;
+    },
+    {},
+  );
   const [undoState, undoFormAction, isUndoing] = useActionState(
     undoChoreLog,
     {},
   );
-  const [prevLogPending, setPrevLogPending] = useState(false);
-
-  // Close modals when log action completes successfully (adjust state during render)
-  if (prevLogPending && !isPending && state.success) {
-    setConfirmChore(null);
-    void setLogParam(null);
-    setLogDate(todayString());
-  }
-  if (prevLogPending !== isPending) {
-    setPrevLogPending(isPending);
-  }
 
   const router = useRouter();
   const searchParams = useSearchParams();
