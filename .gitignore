@@ -44,3 +44,16 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Ralph agent state
+scripts/ralph/.last-branch
+scripts/ralph/progress.txt
+scripts/ralph/prd.json
