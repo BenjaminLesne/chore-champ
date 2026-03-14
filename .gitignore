@@ -8,6 +8,7 @@
 # testing
 /coverage
 .vitest-attachments/
+__screenshots__/
 
 # database
 /prisma/db.sqlite
