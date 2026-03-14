@@ -4,6 +4,7 @@ import { useActionState, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { getChoreIcon } from "@/components/icons";
+import { Portal } from "@/components/portal";
 import {
   logChore,
   undoChoreLog,
@@ -412,159 +413,170 @@ export function ChoreBoard({
 
       {/* Log chore modal */}
       {showLogModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Log Chore</h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLogModal(false);
-                  setConfirmChore(null);
-                  setLogDate(todayString());
-                }}
-                className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+        <Portal>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Log Chore
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLogModal(false);
+                    setConfirmChore(null);
+                    setLogDate(todayString());
+                  }}
+                  className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                 >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Member selector */}
-            <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Who&apos;s logging?
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {members.map((member) => (
-                  <button
-                    key={member.id}
-                    type="button"
-                    onClick={() => setSelectedMemberId(member.id)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                      selectedMemberId === member.id
-                        ? "bg-blue-600 text-white shadow-md"
-                        : "border border-gray-300 bg-white text-gray-700 hover:border-blue-300"
-                    }`}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    {member.name}
-                  </button>
-                ))}
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
               </div>
-            </div>
 
-            {/* Date picker */}
-            <div className="mt-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Date
-              </label>
-              <input
-                type="date"
-                value={logDate}
-                max={todayString()}
-                onChange={(e) => setLogDate(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              />
-            </div>
-
-            {/* Chore grid */}
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {chores.map((chore) => {
-                const result = getChoreIcon(chore.iconName, chore.iconStyle);
-                return (
-                  <button
-                    key={chore.id}
-                    type="button"
-                    onClick={() => {
-                      if (!selectedMemberId) return;
-                      setConfirmChore(chore);
-                    }}
-                    disabled={!selectedMemberId}
-                    className={`flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all ${
-                      selectedMemberId
-                        ? "cursor-pointer hover:border-blue-300 hover:shadow-md active:scale-95"
-                        : "cursor-not-allowed opacity-50"
-                    }`}
-                  >
-                    <div
-                      className={`flex h-14 w-14 items-center justify-center rounded-full ${
-                        result?.filled
-                          ? "bg-blue-600 text-white"
-                          : "bg-blue-50 text-blue-600"
+              {/* Member selector */}
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Who&apos;s logging?
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {members.map((member) => (
+                    <button
+                      key={member.id}
+                      type="button"
+                      onClick={() => setSelectedMemberId(member.id)}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                        selectedMemberId === member.id
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "border border-gray-300 bg-white text-gray-700 hover:border-blue-300"
                       }`}
                     >
-                      {result ? <result.Icon size={32} /> : null}
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">
-                      {chore.name}
-                    </span>
-                    <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                      {chore.points} {chore.points === 1 ? "pt" : "pts"}
-                    </span>
-                  </button>
-                );
-              })}
+                      {member.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Date picker */}
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={logDate}
+                  max={todayString()}
+                  onChange={(e) => setLogDate(e.target.value)}
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Chore grid */}
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {chores.map((chore) => {
+                  const result = getChoreIcon(chore.iconName, chore.iconStyle);
+                  return (
+                    <button
+                      key={chore.id}
+                      type="button"
+                      onClick={() => {
+                        if (!selectedMemberId) return;
+                        setConfirmChore(chore);
+                      }}
+                      disabled={!selectedMemberId}
+                      className={`flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all ${
+                        selectedMemberId
+                          ? "cursor-pointer hover:border-blue-300 hover:shadow-md active:scale-95"
+                          : "cursor-not-allowed opacity-50"
+                      }`}
+                    >
+                      <div
+                        className={`flex h-14 w-14 items-center justify-center rounded-full ${
+                          result?.filled
+                            ? "bg-blue-600 text-white"
+                            : "bg-blue-50 text-blue-600"
+                        }`}
+                      >
+                        {result ? <result.Icon size={32} /> : null}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">
+                        {chore.name}
+                      </span>
+                      <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                        {chore.points} {chore.points === 1 ? "pt" : "pts"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
 
       {/* Confirmation dialog */}
       {confirmChore && selectedMemberId && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900">Log Chore</h3>
-            <p className="mt-2 text-gray-600">
-              <span className="font-medium">
-                {members.find((m) => m.id === selectedMemberId)?.name}
-              </span>{" "}
-              did <span className="font-medium">{confirmChore.name}</span> for{" "}
-              <span className="font-semibold text-blue-600">
-                {confirmChore.points} {confirmChore.points === 1 ? "pt" : "pts"}
-              </span>
-              {logDate !== todayString() && (
-                <>
-                  {" "}
-                  on <span className="font-medium">{logDate}</span>
-                </>
-              )}
-              ?
-            </p>
-            <div className="mt-4 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmChore(null)}
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <form action={formAction}>
-                <input type="hidden" name="choreId" value={confirmChore.id} />
-                <input type="hidden" name="memberId" value={selectedMemberId} />
-                <input type="hidden" name="loggedAt" value={logDate} />
+        <Portal>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-900">Log Chore</h3>
+              <p className="mt-2 text-gray-600">
+                <span className="font-medium">
+                  {members.find((m) => m.id === selectedMemberId)?.name}
+                </span>{" "}
+                did <span className="font-medium">{confirmChore.name}</span> for{" "}
+                <span className="font-semibold text-blue-600">
+                  {confirmChore.points}{" "}
+                  {confirmChore.points === 1 ? "pt" : "pts"}
+                </span>
+                {logDate !== todayString() && (
+                  <>
+                    {" "}
+                    on <span className="font-medium">{logDate}</span>
+                  </>
+                )}
+                ?
+              </p>
+              <div className="mt-4 flex gap-3">
                 <button
-                  type="submit"
-                  disabled={isPending}
-                  className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  type="button"
+                  onClick={() => setConfirmChore(null)}
+                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  {isPending ? "Logging..." : "Confirm"}
+                  Cancel
                 </button>
-              </form>
+                <form action={formAction}>
+                  <input type="hidden" name="choreId" value={confirmChore.id} />
+                  <input
+                    type="hidden"
+                    name="memberId"
+                    value={selectedMemberId}
+                  />
+                  <input type="hidden" name="loggedAt" value={logDate} />
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {isPending ? "Logging..." : "Confirm"}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
     </div>
   );
