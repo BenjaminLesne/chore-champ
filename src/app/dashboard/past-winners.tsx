@@ -33,7 +33,10 @@ export function PastWinners({ monthlyData }: { monthlyData: MonthWinner[] }) {
       };
       monthsMap.set(key, entry);
     }
-    entry.winners.push({ name: row.memberName, points: row.totalPoints });
+    entry.winners.push({
+      name: row.memberName,
+      points: Number(row.totalPoints),
+    });
   }
 
   // For each month, find the max score and filter to winners only
@@ -66,12 +69,12 @@ export function PastWinners({ monthlyData }: { monthlyData: MonthWinner[] }) {
             className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2"
           >
             <div>
-              <p className="text-sm font-medium text-gray-700">{m.label}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm font-semibold text-gray-900">
                 {m.winners.length > 1
                   ? m.winners.map((w) => w.name).join(" & ")
                   : m.winners[0]?.name}
               </p>
+              <p className="text-xs text-gray-500">{m.label}</p>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-lg font-bold text-amber-500">

@@ -2,27 +2,24 @@
 
 import { useActionState, useState } from "react";
 import { createChore, type ChoreActionState } from "@/server/chores/actions";
-
-const ICON_OPTIONS = [
-  { value: "washing_machine", label: "Washing Machine" },
-  { value: "dishwasher", label: "Dishwasher" },
-  { value: "garbage", label: "Garbage" },
-] as const;
-
-const STYLE_OPTIONS = [
-  { value: "empty", label: "Empty" },
-  { value: "fill", label: "Fill" },
-] as const;
+import { IconPicker } from "@/components/icon-picker";
 
 export function CreateChoreButton() {
   const [open, setOpen] = useState(false);
-  const [iconName, setIconName] = useState("washing_machine");
-  const [iconStyle, setIconStyle] = useState("empty");
   const initialState: ChoreActionState = {};
   const [state, formAction, pending] = useActionState(
     createChore,
     initialState,
   );
+  const [prevPending, setPrevPending] = useState(false);
+
+  // Close modal when action completes successfully (adjust state during render)
+  if (prevPending && !pending && state.success) {
+    setOpen(false);
+  }
+  if (prevPending !== pending) {
+    setPrevPending(pending);
+  }
 
   return (
     <>
@@ -76,11 +73,7 @@ export function CreateChoreButton() {
               </button>
             </div>
 
-            <form
-              action={formAction}
-              onSubmit={() => setOpen(false)}
-              className="mt-4 space-y-4"
-            >
+            <form action={formAction} className="mt-4 space-y-4">
               <div className="flex gap-3">
                 <div className="flex-1">
                   <label
@@ -122,46 +115,8 @@ export function CreateChoreButton() {
                 <label className="block text-sm font-medium text-gray-700">
                   Icon
                 </label>
-                <input type="hidden" name="iconName" value={iconName} />
-                <div className="mt-1 flex gap-2">
-                  {ICON_OPTIONS.map((icon) => (
-                    <button
-                      key={icon.value}
-                      type="button"
-                      onClick={() => setIconName(icon.value)}
-                      className={`rounded-md border px-3 py-1.5 text-sm ${
-                        iconName === icon.value
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {icon.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Style picker */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Style
-                </label>
-                <input type="hidden" name="iconStyle" value={iconStyle} />
-                <div className="mt-1 flex gap-2">
-                  {STYLE_OPTIONS.map((style) => (
-                    <button
-                      key={style.value}
-                      type="button"
-                      onClick={() => setIconStyle(style.value)}
-                      className={`rounded-md border px-3 py-1.5 text-sm ${
-                        iconStyle === style.value
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {style.label}
-                    </button>
-                  ))}
+                <div className="mt-1">
+                  <IconPicker name="iconName" />
                 </div>
               </div>
 

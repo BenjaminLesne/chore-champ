@@ -112,6 +112,17 @@ export function ChoreBoard({
     undoChoreLog,
     {},
   );
+  const [prevLogPending, setPrevLogPending] = useState(false);
+
+  // Close modals when log action completes successfully (adjust state during render)
+  if (prevLogPending && !isPending && state.success) {
+    setConfirmChore(null);
+    void setLogParam(null);
+    setLogDate(todayString());
+  }
+  if (prevLogPending !== isPending) {
+    setPrevLogPending(isPending);
+  }
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -264,7 +275,10 @@ export function ChoreBoard({
               {members.map((member) => {
                 const points = scoreMap.get(member.id) ?? 0;
                 return (
-                  <th key={member.id} className="px-3 py-3 text-center">
+                  <th
+                    key={member.id}
+                    className="border-l border-gray-200 px-3 py-3 text-center"
+                  >
                     <div className="font-semibold text-gray-900">
                       {member.name}
                     </div>
@@ -295,68 +309,90 @@ export function ChoreBoard({
                   {members.map((member) => {
                     const dayLogs =
                       logsByMemberByDay.get(member.id)?.get(dayKey) ?? [];
+                    const memberDayTotal = dayLogs.reduce(
+                      (sum, l) => sum + l.pointsEarned,
+                      0,
+                    );
                     return (
-                      <td key={member.id} className="px-3 py-2 align-top">
-                        <div className="flex flex-wrap gap-1.5">
-                          {dayLogs.map((log) => {
-                            const chore = choreMap.get(log.choreId);
-                            if (!chore) return null;
-                            const Icon = getChoreIcon(
-                              chore.iconName,
-                              chore.iconStyle,
-                            );
-                            const isExpanded = expandedLogId === log.id;
-                            return (
-                              <div key={log.id} className="relative">
-                                <button
-                                  type="button"
-                                  title={chore.name}
-                                  onClick={() =>
-                                    setExpandedLogId(isExpanded ? null : log.id)
-                                  }
-                                  className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
-                                    isExpanded
-                                      ? "bg-blue-100 ring-2 ring-blue-400"
-                                      : "bg-gray-100 hover:bg-gray-200"
-                                  }`}
-                                >
-                                  {Icon ? (
-                                    <Icon size={22} className="text-blue-600" />
-                                  ) : (
-                                    <span className="text-xs">?</span>
-                                  )}
-                                </button>
-                                {isExpanded && (
-                                  <div className="absolute top-full left-0 z-10 mt-1 w-32 rounded-lg border border-gray-200 bg-white p-2 shadow-md">
-                                    <div className="text-xs font-medium text-gray-900">
-                                      {chore.name}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      +{log.pointsEarned} pts &middot;{" "}
-                                      {formatRelativeTime(log.loggedAt)}
-                                    </div>
-                                    <form
-                                      action={undoFormAction}
-                                      onSubmit={() => setExpandedLogId(null)}
-                                    >
-                                      <input
-                                        type="hidden"
-                                        name="logId"
-                                        value={log.id}
-                                      />
-                                      <button
-                                        type="submit"
-                                        disabled={isUndoing}
-                                        className="mt-1 text-xs text-red-500 hover:text-red-700"
+                      <td
+                        key={member.id}
+                        className="border-l border-gray-200 p-0 align-top"
+                      >
+                        <div className="flex min-h-[3rem] items-start">
+                          {/* Icons section */}
+                          <div className="flex flex-1 flex-wrap gap-1.5 px-3 py-2">
+                            {dayLogs.map((log) => {
+                              const chore = choreMap.get(log.choreId);
+                              if (!chore) return null;
+                              const result = getChoreIcon(
+                                chore.iconName,
+                                chore.iconStyle,
+                              );
+                              const isExpanded = expandedLogId === log.id;
+                              return (
+                                <div key={log.id} className="relative">
+                                  <button
+                                    type="button"
+                                    title={chore.name}
+                                    onClick={() =>
+                                      setExpandedLogId(
+                                        isExpanded ? null : log.id,
+                                      )
+                                    }
+                                    className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                                      isExpanded
+                                        ? "ring-2 ring-blue-400"
+                                        : "hover:opacity-80"
+                                    } ${
+                                      result?.filled
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-gray-100 text-blue-600"
+                                    }`}
+                                  >
+                                    {result ? (
+                                      <result.Icon size={22} />
+                                    ) : (
+                                      <span className="text-xs">?</span>
+                                    )}
+                                  </button>
+                                  {isExpanded && (
+                                    <div className="absolute top-full left-0 z-10 mt-1 w-32 rounded-lg border border-gray-200 bg-white p-2 shadow-md">
+                                      <div className="text-xs font-medium text-gray-900">
+                                        {chore.name}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        +{log.pointsEarned} pts &middot;{" "}
+                                        {formatRelativeTime(log.loggedAt)}
+                                      </div>
+                                      <form
+                                        action={undoFormAction}
+                                        onSubmit={() => setExpandedLogId(null)}
                                       >
-                                        Undo
-                                      </button>
-                                    </form>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
+                                        <input
+                                          type="hidden"
+                                          name="logId"
+                                          value={log.id}
+                                        />
+                                        <button
+                                          type="submit"
+                                          disabled={isUndoing}
+                                          className="mt-1 text-xs text-red-500 hover:text-red-700"
+                                        >
+                                          Undo
+                                        </button>
+                                      </form>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {/* Daily total section */}
+                          <div className="flex min-h-[3rem] items-center border-l border-gray-100 px-2.5 py-2">
+                            <span className="text-sm font-semibold text-gray-700 tabular-nums">
+                              {memberDayTotal > 0 ? memberDayTotal : ""}
+                            </span>
+                          </div>
                         </div>
                       </td>
                     );
@@ -440,7 +476,7 @@ export function ChoreBoard({
             {/* Chore grid */}
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {chores.map((chore) => {
-                const Icon = getChoreIcon(chore.iconName, chore.iconStyle);
+                const result = getChoreIcon(chore.iconName, chore.iconStyle);
                 return (
                   <button
                     key={chore.id}
@@ -456,8 +492,14 @@ export function ChoreBoard({
                         : "cursor-not-allowed opacity-50"
                     }`}
                   >
-                    <div className="text-blue-600">
-                      {Icon ? <Icon size={40} /> : null}
+                    <div
+                      className={`flex h-14 w-14 items-center justify-center rounded-full ${
+                        result?.filled
+                          ? "bg-blue-600 text-white"
+                          : "bg-blue-50 text-blue-600"
+                      }`}
+                    >
+                      {result ? <result.Icon size={32} /> : null}
                     </div>
                     <span className="text-sm font-medium text-gray-900">
                       {chore.name}
@@ -502,14 +544,7 @@ export function ChoreBoard({
               >
                 Cancel
               </button>
-              <form
-                action={formAction}
-                onSubmit={() => {
-                  setConfirmChore(null);
-                  setShowLogModal(false);
-                  setLogDate(todayString());
-                }}
-              >
+              <form action={formAction}>
                 <input type="hidden" name="choreId" value={confirmChore.id} />
                 <input type="hidden" name="memberId" value={selectedMemberId} />
                 <input type="hidden" name="loggedAt" value={logDate} />
