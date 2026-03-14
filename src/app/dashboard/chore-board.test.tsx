@@ -35,45 +35,54 @@ const chores = [
   },
 ];
 
+const monthlyScores = [
+  { memberId: 1, memberName: "Alice", totalPoints: 45 },
+  { memberId: 2, memberName: "Bob", totalPoints: 32 },
+];
+
 describe("ChoreBoard", () => {
   it("shows empty state when no chores", async () => {
     const screen = await render(
-      <ChoreBoard chores={[]} members={members} recentLogs={[]} />,
+      <ChoreBoard
+        chores={[]}
+        members={members}
+        recentLogs={[]}
+        monthlyScores={monthlyScores}
+      />,
     );
     await expect.element(screen.getByText(/No chores yet/)).toBeVisible();
     await expect.element(screen.getByText("Settings")).toBeVisible();
   });
 
-  it("renders member selector buttons", async () => {
+  it("renders member columns with names and points", async () => {
     const screen = await render(
-      <ChoreBoard chores={chores} members={members} recentLogs={[]} />,
+      <ChoreBoard
+        chores={chores}
+        members={members}
+        recentLogs={[]}
+        monthlyScores={monthlyScores}
+      />,
     );
-    await expect
-      .element(screen.getByRole("button", { name: "Alice" }))
-      .toBeVisible();
-    await expect
-      .element(screen.getByRole("button", { name: "Bob" }))
-      .toBeVisible();
+    await expect.element(screen.getByText("Alice")).toBeVisible();
+    await expect.element(screen.getByText("45 pts")).toBeVisible();
+    await expect.element(screen.getByText("Bob")).toBeVisible();
+    await expect.element(screen.getByText("32 pts")).toBeVisible();
   });
 
-  it("renders chore cards with names and points", async () => {
+  it("shows 'No chores yet' in empty member columns", async () => {
     const screen = await render(
-      <ChoreBoard chores={chores} members={members} recentLogs={[]} />,
+      <ChoreBoard
+        chores={chores}
+        members={members}
+        recentLogs={[]}
+        monthlyScores={monthlyScores}
+      />,
     );
-    await expect.element(screen.getByText("Dishes")).toBeVisible();
-    await expect.element(screen.getByText("5 pts")).toBeVisible();
-    await expect.element(screen.getByText("Laundry")).toBeVisible();
-    await expect.element(screen.getByText("3 pts")).toBeVisible();
+    const empties = screen.getByText("No chores yet");
+    await expect.element(empties.first()).toBeVisible();
   });
 
-  it("shows 'Who's logging?' label", async () => {
-    const screen = await render(
-      <ChoreBoard chores={chores} members={members} recentLogs={[]} />,
-    );
-    await expect.element(screen.getByText(/logging/)).toBeVisible();
-  });
-
-  it("renders recent activity logs", async () => {
+  it("renders icon chips for recent logs in member columns", async () => {
     const recentLogs = [
       {
         id: 1,
@@ -82,18 +91,49 @@ describe("ChoreBoard", () => {
         pointsEarned: 5,
         loggedAt: new Date(),
       },
+      {
+        id: 2,
+        choreId: 2,
+        memberId: 2,
+        pointsEarned: 3,
+        loggedAt: new Date(),
+      },
     ];
     const screen = await render(
-      <ChoreBoard chores={chores} members={members} recentLogs={recentLogs} />,
+      <ChoreBoard
+        chores={chores}
+        members={members}
+        recentLogs={recentLogs}
+        monthlyScores={monthlyScores}
+      />,
     );
-    await expect.element(screen.getByText("Recent Activity")).toBeVisible();
-    await expect.element(screen.getByText("+5 pts")).toBeVisible();
-    await expect.element(screen.getByText("Undo")).toBeVisible();
+    // Icon chips should have title attributes
+    await expect.element(screen.getByTitle("Dishes")).toBeVisible();
+    await expect.element(screen.getByTitle("Laundry")).toBeVisible();
+  });
+
+  it("renders FAB button", async () => {
+    const screen = await render(
+      <ChoreBoard
+        chores={chores}
+        members={members}
+        recentLogs={[]}
+        monthlyScores={monthlyScores}
+      />,
+    );
+    await expect
+      .element(screen.getByRole("button", { name: "Log Chore" }))
+      .toBeVisible();
   });
 
   it("shows no members message when members list is empty", async () => {
     const screen = await render(
-      <ChoreBoard chores={chores} members={[]} recentLogs={[]} />,
+      <ChoreBoard
+        chores={chores}
+        members={[]}
+        recentLogs={[]}
+        monthlyScores={[]}
+      />,
     );
     await expect.element(screen.getByText(/No members yet/)).toBeVisible();
   });

@@ -58,8 +58,7 @@ export default async function DashboardPage() {
           gte(choreLogs.loggedAt, monthStart),
         ),
       )
-      .orderBy(desc(choreLogs.loggedAt))
-      .limit(20),
+      .orderBy(desc(choreLogs.loggedAt)),
     db
       .select({
         memberId: members.id,
@@ -145,6 +144,7 @@ export default async function DashboardPage() {
               chores={householdChores}
               members={householdMembers}
               recentLogs={recentLogs}
+              monthlyScores={monthlyScores}
             />
           </section>
           <aside className="space-y-6">
