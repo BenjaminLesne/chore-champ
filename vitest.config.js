@@ -15,9 +15,11 @@ export default defineConfig({
   },
   test: {
     include: ["src/**/*.test.{ts,tsx}"],
+    reporters: ["json"],
     browser: {
       enabled: true,
       provider: playwright(),
+      headless: true,
       instances: [{ browser: "chromium" }],
     },
   },
