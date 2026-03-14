@@ -1,0 +1,2 @@
+# Routes that don't require e2e tests (one route segment per line).
+# Managed by humans only — AI agents cannot edit this file.
