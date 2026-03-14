@@ -5,7 +5,7 @@ describe("session token utilities", () => {
   const secret = "test-secret-that-is-at-least-32-characters-long";
 
   it("creates and parses a valid session token", async () => {
-    const payload = { adminId: 1, householdId: 2 };
+    const payload = { adminId: 1, householdId: 2, memberId: 3, isAdmin: true };
     const token = await createSessionToken(payload, secret);
 
     expect(token).toBeTypeOf("string");
@@ -16,7 +16,7 @@ describe("session token utilities", () => {
   });
 
   it("returns null for a tampered token", async () => {
-    const payload = { adminId: 1, householdId: 2 };
+    const payload = { adminId: 1, householdId: 2, memberId: 3, isAdmin: true };
     const token = await createSessionToken(payload, secret);
     const tampered = token.slice(0, -1) + "x";
 
@@ -28,7 +28,7 @@ describe("session token utilities", () => {
   });
 
   it("returns null when verified with a different secret", async () => {
-    const payload = { adminId: 1, householdId: 2 };
+    const payload = { adminId: 1, householdId: 2, memberId: 3, isAdmin: true };
     const token = await createSessionToken(payload, secret);
 
     expect(

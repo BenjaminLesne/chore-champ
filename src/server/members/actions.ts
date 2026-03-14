@@ -3,7 +3,7 @@
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/server/db";
-import { members } from "@/server/db/schema";
+import { adminAccounts, members } from "@/server/db/schema";
 import { getSession } from "@/server/auth/session";
 import {
   createMemberSchema,
@@ -20,7 +20,7 @@ async function requireAdmin(): Promise<{
   householdId: number;
 } | null> {
   const session = await getSession();
-  if (!session) return null;
+  if (!session?.isAdmin) return null;
   return { householdId: session.householdId };
 }
 
@@ -132,6 +132,17 @@ export async function deleteMember(
 
   if (existing.isAdmin) {
     return { error: "Cannot delete the admin member" };
+  }
+
+  // Check if member has a linked account
+  const [linkedAccount] = await db
+    .select({ id: adminAccounts.id })
+    .from(adminAccounts)
+    .where(eq(adminAccounts.memberId, memberId))
+    .limit(1);
+
+  if (linkedAccount) {
+    return { error: "Cannot delete a member with a linked account" };
   }
 
   await db.delete(members).where(eq(members.id, memberId));

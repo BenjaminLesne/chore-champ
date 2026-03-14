@@ -1,13 +1,19 @@
 "use client";
 
 import { useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { login, type AuthState } from "@/server/auth/actions";
+import { joinHousehold, type AuthState } from "@/server/auth/actions";
 
 const initialState: AuthState = {};
 
-export default function LoginPage() {
-  const [state, formAction, pending] = useActionState(login, initialState);
+export default function JoinPage() {
+  const [state, formAction, pending] = useActionState(
+    joinHousehold,
+    initialState,
+  );
+  const searchParams = useSearchParams();
+  const prefillCode = searchParams.get("code") ?? "";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -17,7 +23,7 @@ export default function LoginPage() {
             Chore Champ
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to your household
+            Join an existing household
           </p>
         </div>
 
@@ -27,6 +33,41 @@ export default function LoginPage() {
               {state.error}
             </div>
           )}
+
+          <div>
+            <label
+              htmlFor="inviteCode"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Invite code
+            </label>
+            <input
+              id="inviteCode"
+              name="inviteCode"
+              type="text"
+              required
+              maxLength={8}
+              defaultValue={prefillCode}
+              placeholder="e.g. ABC12345"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 font-mono tracking-widest text-gray-900 uppercase placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="memberName"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Your name
+            </label>
+            <input
+              id="memberName"
+              name="memberName"
+              type="text"
+              required
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
 
           <div>
             <label
@@ -57,9 +98,13 @@ export default function LoginPage() {
               name="password"
               type="password"
               required
-              autoComplete="current-password"
+              minLength={8}
+              autoComplete="new-password"
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
             />
+            <p className="mt-1 text-xs text-gray-500">
+              Must be at least 8 characters
+            </p>
           </div>
 
           <button
@@ -67,24 +112,24 @@ export default function LoginPage() {
             disabled={pending}
             className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
           >
-            {pending ? "Signing in…" : "Sign in"}
+            {pending ? "Joining…" : "Join household"}
           </button>
         </form>
 
         <div className="space-y-2 text-center text-sm text-gray-600">
           <p>
-            Don&apos;t have an account?{" "}
+            Already have an account?{" "}
+            <Link href="/login" className="text-blue-600 hover:text-blue-500">
+              Sign in
+            </Link>
+          </p>
+          <p>
+            Want to create a new household?{" "}
             <Link
               href="/register"
               className="text-blue-600 hover:text-blue-500"
             >
-              Create one
-            </Link>
-          </p>
-          <p>
-            Have an invite code?{" "}
-            <Link href="/join" className="text-blue-600 hover:text-blue-500">
-              Join a household
+              Register
             </Link>
           </p>
         </div>

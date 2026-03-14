@@ -140,12 +140,14 @@ export default async function DashboardPage({
             >
               Insights
             </a>
-            <a
-              href="/settings"
-              className="rounded-md bg-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-300"
-            >
-              Settings
-            </a>
+            {session.isAdmin && (
+              <a
+                href="/settings"
+                className="rounded-md bg-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-300"
+              >
+                Settings
+              </a>
+            )}
             <form action={logout}>
               <button
                 type="submit"
@@ -165,6 +167,7 @@ export default async function DashboardPage({
               recentLogs={recentLogs}
               monthlyScores={monthlyScores}
               currentMonth={`${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, "0")}`}
+              currentMemberId={session.memberId}
             />
           </section>
           <aside className="space-y-6">

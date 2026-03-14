@@ -108,12 +108,20 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:text-blue-500">
-            Sign in
-          </Link>
-        </p>
+        <div className="space-y-2 text-center text-sm text-gray-600">
+          <p>
+            Already have an account?{" "}
+            <Link href="/login" className="text-blue-600 hover:text-blue-500">
+              Sign in
+            </Link>
+          </p>
+          <p>
+            Have an invite code?{" "}
+            <Link href="/join" className="text-blue-600 hover:text-blue-500">
+              Join a household
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );

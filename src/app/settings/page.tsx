@@ -3,15 +3,17 @@ import { eq } from "drizzle-orm";
 import { getSession } from "@/server/auth/session";
 import { logout } from "@/server/auth/actions";
 import { db } from "@/server/db";
-import { members, chores } from "@/server/db/schema";
+import { households, members, chores } from "@/server/db/schema";
 import { MemberList } from "./member-list";
 import { ChoreList } from "./chore-list";
+import { InviteCodeSection } from "./invite-code-section";
 
 export default async function SettingsPage() {
   const session = await getSession();
   if (!session) redirect("/login");
+  if (!session.isAdmin) redirect("/dashboard");
 
-  const [householdMembers, householdChores] = await Promise.all([
+  const [householdMembers, householdChores, [household]] = await Promise.all([
     db
       .select({
         id: members.id,
@@ -33,6 +35,11 @@ export default async function SettingsPage() {
       .from(chores)
       .where(eq(chores.householdId, session.householdId))
       .orderBy(chores.createdAt),
+    db
+      .select({ inviteCode: households.inviteCode })
+      .from(households)
+      .where(eq(households.id, session.householdId))
+      .limit(1),
   ]);
 
   return (
@@ -59,6 +66,12 @@ export default async function SettingsPage() {
             </form>
           </div>
         </div>
+
+        {household && (
+          <section className="mt-8">
+            <InviteCodeSection initialCode={household.inviteCode} />
+          </section>
+        )}
 
         <section className="mt-8">
           <h2 className="text-lg font-semibold text-gray-900">Members</h2>

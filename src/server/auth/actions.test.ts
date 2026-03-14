@@ -7,5 +7,7 @@ describe("auth actions", () => {
     expect(mod.register).toBeTypeOf("function");
     expect(mod.login).toBeTypeOf("function");
     expect(mod.logout).toBeTypeOf("function");
+    expect(mod.joinHousehold).toBeTypeOf("function");
+    expect(mod.regenerateInviteCode).toBeTypeOf("function");
   });
 });

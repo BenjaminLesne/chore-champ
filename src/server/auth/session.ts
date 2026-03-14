@@ -3,6 +3,8 @@ import { z } from "zod";
 const sessionPayloadSchema = z.object({
   adminId: z.number(),
   householdId: z.number(),
+  memberId: z.number(),
+  isAdmin: z.boolean(),
 });
 
 export type SessionPayload = z.infer<typeof sessionPayloadSchema>;

@@ -92,16 +92,18 @@ export function ChoreBoard({
   recentLogs,
   monthlyScores,
   currentMonth,
+  currentMemberId,
 }: {
   chores: Chore[];
   members: Member[];
   recentLogs: ChoreLog[];
   monthlyScores: MonthlyScore[];
   currentMonth: string;
+  currentMemberId?: number;
 }) {
   const [selectedMemberId, setSelectedMemberId] = useQueryState(
     "member",
-    parseAsInteger,
+    parseAsInteger.withDefault(currentMemberId ?? -1),
   );
   const [logParam, setLogParam] = useQueryState("log");
   const [confirmChore, setConfirmChore] = useState<Chore | null>(null);

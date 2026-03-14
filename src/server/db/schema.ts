@@ -9,6 +9,7 @@ export const createTable = pgTableCreator((name) => `chore-champ_${name}`);
 export const households = createTable("household", (d) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
   name: d.varchar({ length: 256 }).notNull(),
+  inviteCode: d.varchar("invite_code", { length: 8 }).notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .$defaultFn(() => new Date())
     .notNull(),
