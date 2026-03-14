@@ -5,7 +5,6 @@ import { logout } from "@/server/auth/actions";
 import { db } from "@/server/db";
 import { chores, members, choreLogs } from "@/server/db/schema";
 import { ChoreBoard } from "./chore-board";
-import { LogChoreButton } from "./log-chore-button";
 import { CreateChoreButton } from "./create-chore-button";
 import { Scoreboard } from "./scoreboard";
 import { PastWinners } from "./past-winners";
@@ -171,10 +170,7 @@ export default async function DashboardPage({
             />
           </section>
           <aside className="space-y-6">
-            <div className="space-y-2">
-              <LogChoreButton />
-              <CreateChoreButton />
-            </div>
+            <CreateChoreButton />
             <Scoreboard scores={monthlyScores} />
             <PastWinners monthlyData={pastMonthlyData} />
           </aside>

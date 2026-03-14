@@ -109,7 +109,7 @@ export function ChoreBoard({
     "member",
     parseAsInteger.withDefault(currentMemberId ?? -1),
   );
-  const [logParam, setLogParam] = useQueryState("log");
+  const [showLogModal, setShowLogModal] = useState(false);
   const [confirmChore, setConfirmChore] = useState<Chore | null>(null);
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
   const [logDate, setLogDate] = useState(todayString);
@@ -118,7 +118,7 @@ export function ChoreBoard({
       const result = await logChore(prevState, formData);
       if (result.success) {
         setConfirmChore(null);
-        void setLogParam(null);
+        setShowLogModal(false);
         setLogDate(todayString());
       }
       return result;
@@ -148,22 +148,11 @@ export function ChoreBoard({
     [router, searchParams],
   );
 
-  const showLogModal = logParam === "1";
-  const setShowLogModal = (open: boolean) =>
-    void setLogParam(open ? "1" : null);
-
   if (chores.length === 0) {
     return (
       <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
         <p className="text-gray-500">
-          No chores yet. Add some in{" "}
-          <a
-            href="/settings"
-            className="text-blue-600 underline hover:text-blue-800"
-          >
-            Settings
-          </a>
-          .
+          No chores yet. Use the New Chore button to add some.
         </p>
       </div>
     );
@@ -222,7 +211,28 @@ export function ChoreBoard({
         </p>
       )}
 
-      {/* Month selector */}
+      {/* Log chore trigger + Month selector */}
+      <button
+        type="button"
+        onClick={() => setShowLogModal(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 active:scale-[0.98]"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Log Chore
+      </button>
       <div className="flex items-center justify-between">
         <button
           type="button"
