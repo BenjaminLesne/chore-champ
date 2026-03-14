@@ -6,7 +6,7 @@ import {
 } from "./schemas.ts";
 
 describe("createChoreSchema", () => {
-  it("accepts valid input", () => {
+  it("accepts valid input with legacy icon names", () => {
     expect(
       createChoreSchema.safeParse({
         name: "Dishes",
@@ -15,6 +15,39 @@ describe("createChoreSchema", () => {
         points: 5,
       }).success,
     ).toBe(true);
+  });
+
+  it("accepts Lucide kebab-case icon names", () => {
+    expect(
+      createChoreSchema.safeParse({
+        name: "Laundry",
+        iconName: "washing-machine",
+        iconStyle: "outline",
+        points: 3,
+      }).success,
+    ).toBe(true);
+  });
+
+  it("accepts any string icon name up to 64 chars", () => {
+    expect(
+      createChoreSchema.safeParse({
+        name: "Test",
+        iconName: "some-custom-icon",
+        iconStyle: "outline",
+        points: 1,
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects empty icon name", () => {
+    expect(
+      createChoreSchema.safeParse({
+        name: "Dishes",
+        iconName: "",
+        iconStyle: "outline",
+        points: 5,
+      }).success,
+    ).toBe(false);
   });
 
   it("rejects empty name", () => {
@@ -28,26 +61,16 @@ describe("createChoreSchema", () => {
     ).toBe(false);
   });
 
-  it("rejects invalid icon name", () => {
-    expect(
-      createChoreSchema.safeParse({
-        name: "Dishes",
-        iconName: "invalid_icon",
-        iconStyle: "empty",
-        points: 5,
-      }).success,
-    ).toBe(false);
-  });
-
-  it("rejects invalid icon style", () => {
-    expect(
-      createChoreSchema.safeParse({
-        name: "Dishes",
-        iconName: "dishwasher",
-        iconStyle: "outline",
-        points: 5,
-      }).success,
-    ).toBe(false);
+  it("defaults iconStyle to outline when omitted", () => {
+    const result = createChoreSchema.safeParse({
+      name: "Dishes",
+      iconName: "dishwasher",
+      points: 5,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.iconStyle).toBe("outline");
+    }
   });
 
   it.each([0, -3])("rejects points=%i", (points) => {
@@ -73,7 +96,7 @@ describe("createChoreSchema", () => {
   });
 
   it.each(["washing_machine", "dishwasher", "garbage"])(
-    "accepts icon name %s",
+    "accepts legacy icon name %s",
     (iconName) => {
       expect(
         createChoreSchema.safeParse({
@@ -93,8 +116,8 @@ describe("updateChoreSchema", () => {
       updateChoreSchema.safeParse({
         choreId: 1,
         name: "Laundry",
-        iconName: "washing_machine",
-        iconStyle: "fill",
+        iconName: "washing-machine",
+        iconStyle: "outline",
         points: 10,
       }).success,
     ).toBe(true);

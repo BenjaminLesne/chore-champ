@@ -1,12 +1,8 @@
 import { z } from "zod";
 
-const iconNameField = z.enum(["washing_machine", "dishwasher", "garbage"], {
-  errorMap: () => ({ message: "Invalid icon name" }),
-});
+const iconNameField = z.string().min(1, "Icon name is required").max(64);
 
-const iconStyleField = z.enum(["empty", "fill"], {
-  errorMap: () => ({ message: "Invalid icon style" }),
-});
+const iconStyleField = z.string().max(16).default("outline");
 
 export const createChoreSchema = z.object({
   name: z.string().min(1, "Name is required").max(256),
