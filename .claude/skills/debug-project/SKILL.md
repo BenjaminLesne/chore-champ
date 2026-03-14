@@ -1,5 +1,5 @@
 ---
-name: debug-fileworld
+name: debug-project
 description: "Investigate runtime issues by querying the database, reading server logs, and tracing code flows. Use when debugging errors, unexpected behavior, or data inconsistencies."
 ---
 
