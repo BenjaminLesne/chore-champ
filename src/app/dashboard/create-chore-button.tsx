@@ -2,7 +2,6 @@
 
 import { useActionState, useState } from "react";
 import { createChore, type ChoreActionState } from "@/server/chores/actions";
-import { Portal } from "@/components/portal";
 import { IconPicker } from "@/components/icon-picker";
 
 export function CreateChoreButton() {
@@ -44,97 +43,93 @@ export function CreateChoreButton() {
       </button>
 
       {open && (
-        <Portal>
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  New Chore
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">New Chore</h3>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form action={formAction} className="mt-4 space-y-4">
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label
+                    htmlFor="create-chore-name"
+                    className="block text-sm font-medium text-gray-700"
                   >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
+                    Name
+                  </label>
+                  <input
+                    id="create-chore-name"
+                    name="name"
+                    type="text"
+                    required
+                    placeholder="Chore name"
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div className="w-24">
+                  <label
+                    htmlFor="create-chore-points"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Points
+                  </label>
+                  <input
+                    id="create-chore-points"
+                    name="points"
+                    type="number"
+                    required
+                    min={1}
+                    defaultValue={1}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  />
+                </div>
               </div>
 
-              <form action={formAction} className="mt-4 space-y-4">
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label
-                      htmlFor="create-chore-name"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Name
-                    </label>
-                    <input
-                      id="create-chore-name"
-                      name="name"
-                      type="text"
-                      required
-                      placeholder="Chore name"
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div className="w-24">
-                    <label
-                      htmlFor="create-chore-points"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Points
-                    </label>
-                    <input
-                      id="create-chore-points"
-                      name="points"
-                      type="number"
-                      required
-                      min={1}
-                      defaultValue={1}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
+              {/* Icon picker */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Icon
+                </label>
+                <div className="mt-1">
+                  <IconPicker name="iconName" />
                 </div>
+              </div>
 
-                {/* Icon picker */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Icon
-                  </label>
-                  <div className="mt-1">
-                    <IconPicker name="iconName" />
-                  </div>
-                </div>
+              {state.error && (
+                <p className="text-sm text-red-600">{state.error}</p>
+              )}
 
-                {state.error && (
-                  <p className="text-sm text-red-600">{state.error}</p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={pending}
-                  className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {pending ? "Creating..." : "Create Chore"}
-                </button>
-              </form>
-            </div>
+              <button
+                type="submit"
+                disabled={pending}
+                className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {pending ? "Creating..." : "Create Chore"}
+              </button>
+            </form>
           </div>
-        </Portal>
+        </div>
       )}
     </>
   );
