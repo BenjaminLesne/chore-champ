@@ -24,13 +24,14 @@ export async function logChore(
   const parsed = logChoreSchema.safeParse({
     choreId: Number(formData.get("choreId")),
     memberId: Number(formData.get("memberId")),
+    loggedAt: formData.get("loggedAt") ?? undefined,
   });
 
   if (!parsed.success) {
     return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
   }
 
-  const { choreId, memberId } = parsed.data;
+  const { choreId, memberId, loggedAt } = parsed.data;
 
   // Verify the chore belongs to this household
   const [chore] = await db
@@ -61,10 +62,13 @@ export async function logChore(
     return { error: "Member not found" };
   }
 
+  const loggedAtField = loggedAt ? { loggedAt: new Date(loggedAt) } : {};
+
   await db.insert(choreLogs).values({
     choreId,
     memberId,
     pointsEarned: chore.points,
+    ...loggedAtField,
   });
 
   revalidatePath("/dashboard");

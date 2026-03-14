@@ -75,6 +75,13 @@ export default defineConfig(
           message:
             'Avoid `t.raw()` — it returns `unknown` and bypasses type safety. Use named keys in your JSON and map them in the component: `const keys = ["a", "b"] as const; keys.map(k => t(`items.${k}`))`. See https://next-intl.dev/docs/usage/translations#arrays-of-messages',
         },
+        {
+          selector: "SpreadElement > ConditionalExpression",
+          message:
+            "Don't spread a ternary inline. Extract it to a named variable first:\n" +
+            "  const fooField = cond ? { foo } : {};\n" +
+            "  { ...fooField, otherProps }",
+        },
       ],
       "no-restricted-properties": [
         "error",
