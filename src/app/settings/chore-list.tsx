@@ -7,6 +7,7 @@ import {
   type ChoreActionState,
 } from "@/server/chores/actions";
 import { IconPicker } from "@/components/icon-picker";
+import { getChoreIcon } from "@/components/icons";
 
 type Chore = {
   id: number;
@@ -101,59 +102,73 @@ function ChoreRow({ chore }: { chore: Chore }) {
   }
 
   return (
-    <li className="flex items-center justify-between rounded-md border border-gray-200 bg-white p-4">
-      <div className="flex items-center gap-3">
-        <span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-          {chore.iconName.replace("_", " ")} · {chore.iconStyle}
-        </span>
-        <span className="font-medium text-gray-900">{chore.name}</span>
-        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-          {chore.points} pts
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
-        >
-          Edit
-        </button>
-
-        {confirmDelete ? (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-red-600">Delete?</span>
-            <form action={deleteAction}>
-              <input type="hidden" name="choreId" value={chore.id} />
-              <button
-                type="submit"
-                disabled={deletePending}
-                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-              >
-                {deletePending ? "Deleting…" : "Confirm"}
-              </button>
-            </form>
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(false)}
-              className="rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
-            >
-              Cancel
-            </button>
-            {deleteState.error && (
-              <p className="text-sm text-red-600">{deleteState.error}</p>
-            )}
+    <li className="flex items-center gap-3 rounded-md border border-gray-200 bg-white p-4">
+      {(() => {
+        const result = getChoreIcon(chore.iconName, chore.iconStyle);
+        const color = chore.iconColor || "#3b82f6";
+        return (
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+            style={
+              result?.filled
+                ? { backgroundColor: color, color: "white" }
+                : { backgroundColor: `${color}1a`, color: color }
+            }
+          >
+            {result ? <result.Icon size={28} /> : null}
           </div>
-        ) : (
+        );
+      })()}
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-gray-900">{chore.name}</span>
+          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+            {chore.points} pts
+          </span>
+        </div>
+        <div className="mt-2 flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setConfirmDelete(true)}
-            className="rounded-md bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100"
+            onClick={() => setEditing(true)}
+            className="rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
           >
-            Delete
+            Edit
           </button>
-        )}
+
+          {confirmDelete ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-red-600">Delete?</span>
+              <form action={deleteAction}>
+                <input type="hidden" name="choreId" value={chore.id} />
+                <button
+                  type="submit"
+                  disabled={deletePending}
+                  className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {deletePending ? "Deleting…" : "Confirm"}
+                </button>
+              </form>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              {deleteState.error && (
+                <p className="text-sm text-red-600">{deleteState.error}</p>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="rounded-md bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100"
+            >
+              Delete
+            </button>
+          )}
+        </div>
       </div>
     </li>
   );
