@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { eq, sql } from "drizzle-orm";
 import { getSession } from "@/server/auth/session";
 import { db } from "@/server/db";
-import { members, choreLogs } from "@/server/db/schema";
+import { chores, members, choreLogs } from "@/server/db/schema";
 import { InsightsCharts } from "./insights-charts";
 
 export default async function InsightsPage() {
@@ -25,14 +25,14 @@ export default async function InsightsPage() {
           "log_week",
         ),
         memberId: choreLogs.memberId,
-        totalPoints:
-          sql<number>`coalesce(sum(${choreLogs.pointsEarned}), 0)`.as(
-            "total_points",
-          ),
+        totalPoints: sql<number>`coalesce(sum(${chores.points}), 0)`.as(
+          "total_points",
+        ),
         choreCount: sql<number>`count(*)`.as("chore_count"),
       })
       .from(choreLogs)
       .innerJoin(members, eq(choreLogs.memberId, members.id))
+      .innerJoin(chores, eq(choreLogs.choreId, chores.id))
       .where(eq(members.householdId, session.householdId))
       .groupBy(
         sql`extract(isoyear from ${choreLogs.loggedAt})`,
@@ -50,14 +50,14 @@ export default async function InsightsPage() {
           "log_month",
         ),
         memberId: choreLogs.memberId,
-        totalPoints:
-          sql<number>`coalesce(sum(${choreLogs.pointsEarned}), 0)`.as(
-            "total_points",
-          ),
+        totalPoints: sql<number>`coalesce(sum(${chores.points}), 0)`.as(
+          "total_points",
+        ),
         choreCount: sql<number>`count(*)`.as("chore_count"),
       })
       .from(choreLogs)
       .innerJoin(members, eq(choreLogs.memberId, members.id))
+      .innerJoin(chores, eq(choreLogs.choreId, chores.id))
       .where(eq(members.householdId, session.householdId))
       .groupBy(
         sql`extract(year from ${choreLogs.loggedAt})`,

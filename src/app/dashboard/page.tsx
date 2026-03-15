@@ -81,10 +81,9 @@ export default async function DashboardPage({
       .select({
         memberId: members.id,
         memberName: members.name,
-        totalPoints:
-          sql<number>`coalesce(sum(${choreLogs.pointsEarned}), 0)`.as(
-            "total_points",
-          ),
+        totalPoints: sql<number>`coalesce(sum(${chores.points}), 0)`.as(
+          "total_points",
+        ),
       })
       .from(members)
       .leftJoin(
@@ -95,6 +94,7 @@ export default async function DashboardPage({
           lt(choreLogs.loggedAt, monthEnd),
         ),
       )
+      .leftJoin(chores, eq(choreLogs.choreId, chores.id))
       .where(eq(members.householdId, session.householdId))
       .groupBy(members.id, members.name)
       .orderBy(sql`total_points desc`),
@@ -107,13 +107,13 @@ export default async function DashboardPage({
           "log_month",
         ),
         memberName: members.name,
-        totalPoints:
-          sql<number>`coalesce(sum(${choreLogs.pointsEarned}), 0)`.as(
-            "total_points",
-          ),
+        totalPoints: sql<number>`coalesce(sum(${chores.points}), 0)`.as(
+          "total_points",
+        ),
       })
       .from(choreLogs)
       .innerJoin(members, eq(choreLogs.memberId, members.id))
+      .innerJoin(chores, eq(choreLogs.choreId, chores.id))
       .where(
         and(
           eq(members.householdId, session.householdId),
