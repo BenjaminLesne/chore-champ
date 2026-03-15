@@ -311,7 +311,7 @@ export function ChoreBoard({
 
       {/* Member columns grid */}
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="w-full">
+        <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-gray-100">
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-400">

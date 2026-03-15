@@ -160,7 +160,7 @@ export default async function DashboardPage({
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
-          <section>
+          <section className="min-w-0">
             <ChoreBoard
               chores={householdChores}
               members={householdMembers}
