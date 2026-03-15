@@ -30,6 +30,7 @@ export default async function SettingsPage() {
         name: chores.name,
         iconName: chores.iconName,
         iconStyle: chores.iconStyle,
+        iconColor: chores.iconColor,
         points: chores.points,
       })
       .from(chores)

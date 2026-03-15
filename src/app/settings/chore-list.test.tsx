@@ -15,9 +15,17 @@ const chores = [
     name: "Dishes",
     iconName: "dishwasher",
     iconStyle: "empty",
+    iconColor: "#3b82f6",
     points: 5,
   },
-  { id: 2, name: "Trash", iconName: "garbage", iconStyle: "fill", points: 2 },
+  {
+    id: 2,
+    name: "Trash",
+    iconName: "garbage",
+    iconStyle: "fill",
+    iconColor: "#3b82f6",
+    points: 2,
+  },
 ];
 
 describe("ChoreList", () => {

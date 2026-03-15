@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "next build",
+    "clean": "rm -rf .next node_modules/.cache",
     "check": "next lint && tsc --noEmit",
     "db:start": "./start-database.sh",
     "db:generate": "drizzle-kit generate",

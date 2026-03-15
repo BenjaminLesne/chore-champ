@@ -21,17 +21,19 @@ export async function logChore(
     return { error: "You must be logged in" };
   }
 
+  const rawQuantity = formData.get("quantity");
   const parsed = logChoreSchema.safeParse({
     choreId: Number(formData.get("choreId")),
     memberId: Number(formData.get("memberId")),
     loggedAt: formData.get("loggedAt") ?? undefined,
+    quantity: rawQuantity ? Number(rawQuantity) : undefined,
   });
 
   if (!parsed.success) {
     return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
   }
 
-  const { choreId, memberId, loggedAt } = parsed.data;
+  const { choreId, memberId, loggedAt, quantity } = parsed.data;
 
   // Verify the chore belongs to this household
   const [chore] = await db
@@ -64,12 +66,14 @@ export async function logChore(
 
   const loggedAtField = loggedAt ? { loggedAt: new Date(loggedAt) } : {};
 
-  await db.insert(choreLogs).values({
-    choreId,
-    memberId,
-    pointsEarned: chore.points,
-    ...loggedAtField,
-  });
+  await db.insert(choreLogs).values(
+    Array.from({ length: quantity }, () => ({
+      choreId,
+      memberId,
+      pointsEarned: chore.points,
+      ...loggedAtField,
+    })),
+  );
 
   revalidatePath("/dashboard");
   return { success: true };

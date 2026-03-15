@@ -6,7 +6,13 @@ interface ScoreEntry {
   totalPoints: number;
 }
 
-export function Scoreboard({ scores }: { scores: ScoreEntry[] }) {
+export function Scoreboard({
+  scores,
+  monthName,
+}: {
+  scores: ScoreEntry[];
+  monthName: string;
+}) {
   if (scores.length === 0) {
     return null;
   }
@@ -16,9 +22,6 @@ export function Scoreboard({ scores }: { scores: ScoreEntry[] }) {
   const winners = hasActivity
     ? scores.filter((s) => s.totalPoints === maxPoints)
     : [];
-
-  const now = new Date();
-  const monthName = now.toLocaleString("default", { month: "long" });
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">

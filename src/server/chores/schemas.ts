@@ -4,10 +4,16 @@ const iconNameField = z.string().min(1, "Icon name is required").max(64);
 
 const iconStyleField = z.string().max(16).default("outline");
 
+const iconColorField = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/)
+  .default("#3b82f6");
+
 export const createChoreSchema = z.object({
   name: z.string().min(1, "Name is required").max(256),
   iconName: iconNameField,
   iconStyle: iconStyleField,
+  iconColor: iconColorField,
   points: z.number().int().positive("Points must be a positive integer"),
 });
 
@@ -16,6 +22,7 @@ export const updateChoreSchema = z.object({
   name: z.string().min(1, "Name is required").max(256),
   iconName: iconNameField,
   iconStyle: iconStyleField,
+  iconColor: iconColorField,
   points: z.number().int().positive("Points must be a positive integer"),
 });
 

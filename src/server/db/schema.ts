@@ -64,6 +64,10 @@ export const chores = createTable(
       .varchar("icon_style", { length: 16 })
       .notNull()
       .default("empty"),
+    iconColor: d
+      .varchar("icon_color", { length: 16 })
+      .notNull()
+      .default("#3b82f6"),
     points: d.integer().notNull(),
     householdId: d
       .integer("household_id")

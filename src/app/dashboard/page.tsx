@@ -45,6 +45,7 @@ export default async function DashboardPage({
         name: chores.name,
         iconName: chores.iconName,
         iconStyle: chores.iconStyle,
+        iconColor: chores.iconColor,
         points: chores.points,
       })
       .from(chores)
@@ -170,9 +171,24 @@ export default async function DashboardPage({
             />
           </section>
           <aside className="space-y-6">
-            <CreateChoreButton />
-            <Scoreboard scores={monthlyScores} />
-            <PastWinners monthlyData={pastMonthlyData} />
+            <div className="hidden lg:block">
+              <CreateChoreButton />
+            </div>
+            <Scoreboard
+              scores={monthlyScores}
+              monthName={monthStart.toLocaleString("default", {
+                month: "long",
+              })}
+            />
+            <PastWinners
+              monthlyData={pastMonthlyData.map((d) => ({
+                ...d,
+                label: new Date(d.year, d.month - 1).toLocaleString("default", {
+                  month: "long",
+                  year: "numeric",
+                }),
+              }))}
+            />
           </aside>
         </div>
       </div>

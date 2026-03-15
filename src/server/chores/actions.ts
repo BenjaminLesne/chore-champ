@@ -3,7 +3,7 @@
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/server/db";
-import { chores } from "@/server/db/schema";
+import { chores, choreLogs } from "@/server/db/schema";
 import { getSession } from "@/server/auth/session";
 import {
   createChoreSchema,
@@ -37,6 +37,7 @@ export async function createChore(
     name: formData.get("name"),
     iconName: formData.get("iconName"),
     iconStyle: formData.get("iconStyle"),
+    iconColor: formData.get("iconColor") ?? undefined,
     points: Number(formData.get("points")),
   });
 
@@ -44,12 +45,13 @@ export async function createChore(
     return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
   }
 
-  const { name, iconName, iconStyle, points } = parsed.data;
+  const { name, iconName, iconStyle, iconColor, points } = parsed.data;
 
   await db.insert(chores).values({
     name,
     iconName,
     iconStyle,
+    iconColor,
     points,
     householdId: session.householdId,
   });
@@ -73,6 +75,7 @@ export async function updateChore(
     name: formData.get("name"),
     iconName: formData.get("iconName"),
     iconStyle: formData.get("iconStyle"),
+    iconColor: formData.get("iconColor") ?? undefined,
     points: Number(formData.get("points")),
   });
 
@@ -80,7 +83,7 @@ export async function updateChore(
     return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
   }
 
-  const { choreId, name, iconName, iconStyle, points } = parsed.data;
+  const { choreId, name, iconName, iconStyle, iconColor, points } = parsed.data;
 
   // Verify the chore belongs to this household
   const [existing] = await db
@@ -97,10 +100,11 @@ export async function updateChore(
 
   await db
     .update(chores)
-    .set({ name, iconName, iconStyle, points })
+    .set({ name, iconName, iconStyle, iconColor, points })
     .where(eq(chores.id, choreId));
 
   revalidatePath("/settings");
+  revalidatePath("/dashboard");
   return { success: true };
 }
 
@@ -136,9 +140,11 @@ export async function deleteChore(
     return { error: "Chore not found" };
   }
 
-  // Delete the chore — historical chore_logs with points_earned are preserved
+  // Delete associated logs first, then the chore
+  await db.delete(choreLogs).where(eq(choreLogs.choreId, choreId));
   await db.delete(chores).where(eq(chores.id, choreId));
 
   revalidatePath("/settings");
+  revalidatePath("/dashboard");
   return { success: true };
 }

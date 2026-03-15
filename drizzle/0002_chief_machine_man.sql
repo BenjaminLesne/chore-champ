@@ -1,0 +1,1 @@
+ALTER TABLE "chore-champ_chore" ADD COLUMN "icon_color" varchar(16) DEFAULT '#3b82f6' NOT NULL;

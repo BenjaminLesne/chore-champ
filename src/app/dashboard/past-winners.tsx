@@ -1,10 +1,11 @@
 "use client";
 
-interface MonthWinner {
+export interface MonthWinner {
   year: number;
   month: number;
   memberName: string;
   totalPoints: number;
+  label: string;
 }
 
 interface PastMonth {
@@ -21,14 +22,10 @@ export function PastWinners({ monthlyData }: { monthlyData: MonthWinner[] }) {
     const key = `${row.year}-${String(row.month).padStart(2, "0")}`;
     let entry = monthsMap.get(key);
     if (!entry) {
-      const date = new Date(row.year, row.month - 1);
       entry = {
         year: row.year,
         month: row.month,
-        label: date.toLocaleString("default", {
-          month: "long",
-          year: "numeric",
-        }),
+        label: row.label,
         winners: [],
       };
       monthsMap.set(key, entry);

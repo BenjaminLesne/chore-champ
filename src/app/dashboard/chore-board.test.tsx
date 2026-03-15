@@ -32,6 +32,7 @@ const chores = [
     name: "Dishes",
     iconName: "dishwasher",
     iconStyle: "empty",
+    iconColor: "#3b82f6",
     points: 5,
   },
   {
@@ -39,6 +40,7 @@ const chores = [
     name: "Laundry",
     iconName: "washing_machine",
     iconStyle: "fill",
+    iconColor: "#3b82f6",
     points: 3,
   },
 ];

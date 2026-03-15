@@ -13,6 +13,7 @@ type Chore = {
   name: string;
   iconName: string;
   iconStyle: string;
+  iconColor: string;
   points: number;
 };
 
@@ -71,6 +72,7 @@ function ChoreRow({ chore }: { chore: Chore }) {
                 name="iconName"
                 defaultValue={chore.iconName}
                 defaultStyle={chore.iconStyle}
+                defaultColor={chore.iconColor}
               />
             </div>
           </div>

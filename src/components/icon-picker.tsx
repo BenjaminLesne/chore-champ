@@ -13,7 +13,11 @@ import {
   CommandList,
   CommandEmpty,
 } from "@/components/ui/command";
-import { ICON_NAMES, getLucideIcon } from "@/components/icons/lucide";
+import {
+  ICON_NAMES,
+  SUGGESTED_ICON_NAMES,
+  getLucideIcon,
+} from "@/components/icons/lucide";
 
 function renderIcon(name: string, size: number) {
   const icon = getLucideIcon(name);
@@ -24,6 +28,19 @@ function renderIcon(name: string, size: number) {
 const COLS = 6;
 const ROW_HEIGHT = 44;
 
+const COLOR_SWATCHES = [
+  { name: "Blue", value: "#3b82f6" },
+  { name: "Red", value: "#ef4444" },
+  { name: "Green", value: "#22c55e" },
+  { name: "Amber", value: "#f59e0b" },
+  { name: "Purple", value: "#a855f7" },
+  { name: "Pink", value: "#ec4899" },
+  { name: "Cyan", value: "#06b6d4" },
+  { name: "Orange", value: "#f97316" },
+  { name: "Gray", value: "#6b7280" },
+  { name: "Black", value: "#1f2937" },
+];
+
 interface IconPickerProps {
   /** Hidden input name for the icon name */
   name: string;
@@ -32,6 +49,7 @@ interface IconPickerProps {
   value?: string;
   defaultValue?: string;
   defaultStyle?: string;
+  defaultColor?: string;
   onValueChange?: (name: string) => void;
 }
 
@@ -41,10 +59,12 @@ export function IconPicker({
   value: controlledValue,
   defaultValue = "",
   defaultStyle = "outline",
+  defaultColor = "#3b82f6",
   onValueChange,
 }: IconPickerProps) {
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [iconStyle, setIconStyle] = useState(defaultStyle);
+  const [iconColor, setIconColor] = useState(defaultColor);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -52,7 +72,12 @@ export function IconPicker({
   const filled = iconStyle === "fill";
 
   const filtered = useMemo(() => {
-    if (!search) return ICON_NAMES;
+    if (!search) {
+      // Show suggested icons first, then remaining icons
+      const suggestedSet = new Set(SUGGESTED_ICON_NAMES);
+      const rest = ICON_NAMES.filter((n) => !suggestedSet.has(n));
+      return [...SUGGESTED_ICON_NAMES, ...rest];
+    }
     const q = search.toLowerCase();
     return ICON_NAMES.filter((n) => n.includes(q));
   }, [search]);
@@ -73,7 +98,7 @@ export function IconPicker({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={
@@ -133,8 +158,27 @@ export function IconPicker({
         {filled ? "Fill" : "Outline"}
       </button>
 
+      {/* Color swatches */}
+      <div className="flex items-center gap-1">
+        {COLOR_SWATCHES.map((swatch) => (
+          <button
+            key={swatch.value}
+            type="button"
+            onClick={() => setIconColor(swatch.value)}
+            title={swatch.name}
+            className={`h-6 w-6 rounded-full border-2 transition-all ${
+              iconColor === swatch.value
+                ? "scale-110 border-gray-900"
+                : "border-transparent hover:border-gray-300"
+            }`}
+            style={{ backgroundColor: swatch.value }}
+          />
+        ))}
+      </div>
+
       <input type="hidden" name={name} value={selected} />
       <input type="hidden" name={styleName} value={iconStyle} />
+      <input type="hidden" name="iconColor" value={iconColor} />
     </div>
   );
 }

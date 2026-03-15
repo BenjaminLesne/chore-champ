@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState, useCallback } from "react";
+import { Activity, useActionState, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { getChoreIcon } from "@/components/icons";
+import { CreateChoreButton } from "./create-chore-button";
 import {
   logChore,
   undoChoreLog,
@@ -15,6 +16,7 @@ interface Chore {
   name: string;
   iconName: string;
   iconStyle: string;
+  iconColor: string;
   points: number;
 }
 
@@ -34,6 +36,13 @@ interface ChoreLog {
 interface MonthlyScore {
   memberId: number;
   memberName: string;
+  totalPoints: number;
+}
+
+interface ChoreGroup {
+  chore: Chore;
+  logs: ChoreLog[];
+  count: number;
   totalPoints: number;
 }
 
@@ -90,6 +99,14 @@ function todayString(): string {
   return toDateKey(new Date());
 }
 
+/** Lighten a hex color for use as a background tint */
+function hexToTint(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function ChoreBoard({
   chores,
   members,
@@ -111,15 +128,17 @@ export function ChoreBoard({
   );
   const [showLogModal, setShowLogModal] = useState(false);
   const [confirmChore, setConfirmChore] = useState<Chore | null>(null);
-  const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
+  const [expandedGroupKey, setExpandedGroupKey] = useState<string | null>(null);
   const [logDate, setLogDate] = useState(todayString);
+  const [choreSearch, setChoreSearch] = useState("");
+  const [logQuantity, setLogQuantity] = useState(1);
   const [state, formAction, isPending] = useActionState(
     async (prevState: ChoreLogActionState, formData: FormData) => {
       const result = await logChore(prevState, formData);
       if (result.success) {
         setConfirmChore(null);
-        setShowLogModal(false);
-        setLogDate(todayString());
+        setLogQuantity(1);
+        // Don't reset date — Activity preserves state across open/close
       }
       return result;
     },
@@ -202,6 +221,13 @@ export function ChoreBoard({
     ...new Set(recentLogs.map((l) => toDateKey(l.loggedAt))),
   ].sort((a, b) => b.localeCompare(a));
 
+  // Filter chores for the log modal search
+  const filteredChores = choreSearch
+    ? chores.filter((c) =>
+        c.name.toLowerCase().includes(choreSearch.toLowerCase()),
+      )
+    : chores;
+
   return (
     <div className="space-y-4">
       {/* Error display */}
@@ -233,6 +259,9 @@ export function ChoreBoard({
         </svg>
         Log Chore
       </button>
+      <div className="lg:hidden">
+        <CreateChoreButton />
+      </div>
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -325,10 +354,27 @@ export function ChoreBoard({
                   {members.map((member) => {
                     const dayLogs =
                       logsByMemberByDay.get(member.id)?.get(dayKey) ?? [];
-                    const memberDayTotal = dayLogs.reduce(
-                      (sum, l) => sum + l.pointsEarned,
+                    // Group logs by choreId
+                    const groupMap = new Map<number, ChoreGroup>();
+                    for (const log of dayLogs) {
+                      const chore = choreMap.get(log.choreId);
+                      if (!chore) continue;
+                      let group = groupMap.get(log.choreId);
+                      if (!group) {
+                        group = { chore, logs: [], count: 0, totalPoints: 0 };
+                        groupMap.set(log.choreId, group);
+                      }
+                      group.logs.push(log);
+                      group.count++;
+                      group.totalPoints += chore.points;
+                    }
+
+                    const memberDayTotal = [...groupMap.values()].reduce(
+                      (sum, g) => sum + g.totalPoints,
                       0,
                     );
+                    const groups = [...groupMap.values()];
+
                     return (
                       <td
                         key={member.id}
@@ -337,33 +383,49 @@ export function ChoreBoard({
                         <div className="flex min-h-[3rem] items-start">
                           {/* Icons section */}
                           <div className="flex flex-1 flex-wrap gap-1.5 px-3 py-2">
-                            {dayLogs.map((log) => {
-                              const chore = choreMap.get(log.choreId);
-                              if (!chore) return null;
+                            {groups.map((group) => {
+                              const { chore } = group;
                               const result = getChoreIcon(
                                 chore.iconName,
                                 chore.iconStyle,
                               );
-                              const isExpanded = expandedLogId === log.id;
+                              const groupKey = `${chore.id}-${dayKey}-${member.id}`;
+                              const isExpanded = expandedGroupKey === groupKey;
+                              const [latestLog] = group.logs;
+                              if (!latestLog) return null;
+                              const color = chore.iconColor || "#3b82f6";
                               return (
-                                <div key={log.id} className="relative">
+                                <div key={groupKey} className="relative">
                                   <button
                                     type="button"
                                     title={chore.name}
                                     onClick={() =>
-                                      setExpandedLogId(
-                                        isExpanded ? null : log.id,
+                                      setExpandedGroupKey(
+                                        isExpanded ? null : groupKey,
                                       )
                                     }
                                     className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
                                       isExpanded
-                                        ? "ring-2 ring-blue-400"
+                                        ? "ring-2 ring-offset-1"
                                         : "hover:opacity-80"
-                                    } ${
-                                      result?.filled
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-gray-100 text-blue-600"
                                     }`}
+                                    style={
+                                      result?.filled
+                                        ? {
+                                            backgroundColor: color,
+                                            color: "white",
+                                            ...(isExpanded
+                                              ? { ringColor: color }
+                                              : {}),
+                                          }
+                                        : {
+                                            backgroundColor: hexToTint(
+                                              color,
+                                              0.1,
+                                            ),
+                                            color: color,
+                                          }
+                                    }
                                   >
                                     {result ? (
                                       <result.Icon size={22} />
@@ -371,23 +433,36 @@ export function ChoreBoard({
                                       <span className="text-xs">?</span>
                                     )}
                                   </button>
+                                  {group.count > 1 && (
+                                    <span
+                                      className="absolute -right-1 -bottom-1 flex h-4 min-w-4 items-center justify-center rounded-full px-0.5 text-[10px] font-bold text-white"
+                                      style={{ backgroundColor: color }}
+                                    >
+                                      x{group.count}
+                                    </span>
+                                  )}
                                   {isExpanded && (
                                     <div className="absolute top-full left-0 z-10 mt-1 w-32 rounded-lg border border-gray-200 bg-white p-2 shadow-md">
                                       <div className="text-xs font-medium text-gray-900">
                                         {chore.name}
                                       </div>
                                       <div className="text-xs text-gray-500">
-                                        +{log.pointsEarned} pts &middot;{" "}
-                                        {formatRelativeTime(log.loggedAt)}
+                                        +{group.totalPoints} pts
+                                        {group.count > 1 &&
+                                          ` (${group.count}x)`}{" "}
+                                        &middot;{" "}
+                                        {formatRelativeTime(latestLog.loggedAt)}
                                       </div>
                                       <form
                                         action={undoFormAction}
-                                        onSubmit={() => setExpandedLogId(null)}
+                                        onSubmit={() =>
+                                          setExpandedGroupKey(null)
+                                        }
                                       >
                                         <input
                                           type="hidden"
                                           name="logId"
-                                          value={log.id}
+                                          value={latestLog.id}
                                         />
                                         <button
                                           type="submit"
@@ -420,10 +495,10 @@ export function ChoreBoard({
         </table>
       </div>
 
-      {/* Log chore modal */}
-      {showLogModal && (
+      {/* Log chore modal — preserved across open/close via Activity */}
+      <Activity mode={showLogModal ? "visible" : "hidden"}>
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+          <div className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Log Chore</h3>
               <button
@@ -431,7 +506,6 @@ export function ChoreBoard({
                 onClick={() => {
                   setShowLogModal(false);
                   setConfirmChore(null);
-                  setLogDate(todayString());
                 }}
                 className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               >
@@ -489,47 +563,72 @@ export function ChoreBoard({
               />
             </div>
 
-            {/* Chore grid */}
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {chores.map((chore) => {
-                const result = getChoreIcon(chore.iconName, chore.iconStyle);
-                return (
-                  <button
-                    key={chore.id}
-                    type="button"
-                    onClick={() => {
-                      if (!selectedMemberId) return;
-                      setConfirmChore(chore);
-                    }}
-                    disabled={!selectedMemberId}
-                    className={`flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all ${
-                      selectedMemberId
-                        ? "cursor-pointer hover:border-blue-300 hover:shadow-md active:scale-95"
-                        : "cursor-not-allowed opacity-50"
-                    }`}
-                  >
-                    <div
-                      className={`flex h-14 w-14 items-center justify-center rounded-full ${
-                        result?.filled
-                          ? "bg-blue-600 text-white"
-                          : "bg-blue-50 text-blue-600"
+            {/* Search chores */}
+            <div className="mt-4">
+              <input
+                type="text"
+                placeholder="Search chores..."
+                value={choreSearch}
+                onChange={(e) => setChoreSearch(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Chore grid — scrollable */}
+            <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {filteredChores.map((chore) => {
+                  const result = getChoreIcon(chore.iconName, chore.iconStyle);
+                  const color = chore.iconColor || "#3b82f6";
+                  return (
+                    <button
+                      key={chore.id}
+                      type="button"
+                      onClick={() => {
+                        if (!selectedMemberId) return;
+                        setConfirmChore(chore);
+                        setLogQuantity(1);
+                      }}
+                      disabled={!selectedMemberId}
+                      className={`flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all ${
+                        selectedMemberId
+                          ? "cursor-pointer hover:border-blue-300 hover:shadow-md active:scale-95"
+                          : "cursor-not-allowed opacity-50"
                       }`}
                     >
-                      {result ? <result.Icon size={32} /> : null}
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">
-                      {chore.name}
-                    </span>
-                    <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                      {chore.points} {chore.points === 1 ? "pt" : "pts"}
-                    </span>
-                  </button>
-                );
-              })}
+                      <div
+                        className="flex h-14 w-14 items-center justify-center rounded-full"
+                        style={
+                          result?.filled
+                            ? { backgroundColor: color, color: "white" }
+                            : {
+                                backgroundColor: hexToTint(color, 0.1),
+                                color: color,
+                              }
+                        }
+                      >
+                        {result ? <result.Icon size={32} /> : null}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">
+                        {chore.name}
+                      </span>
+                      <span
+                        className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                        style={{
+                          backgroundColor: hexToTint(color, 0.15),
+                          color: color,
+                        }}
+                      >
+                        {chore.points} {chore.points === 1 ? "pt" : "pts"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </Activity>
 
       {/* Confirmation dialog */}
       {confirmChore && selectedMemberId && (
@@ -540,9 +639,17 @@ export function ChoreBoard({
               <span className="font-medium">
                 {members.find((m) => m.id === selectedMemberId)?.name}
               </span>{" "}
-              did <span className="font-medium">{confirmChore.name}</span> for{" "}
+              did <span className="font-medium">{confirmChore.name}</span>
+              {logQuantity > 1 && (
+                <>
+                  {" "}
+                  <span className="font-semibold">x{logQuantity}</span>
+                </>
+              )}{" "}
+              for{" "}
               <span className="font-semibold text-blue-600">
-                {confirmChore.points} {confirmChore.points === 1 ? "pt" : "pts"}
+                {confirmChore.points * logQuantity}{" "}
+                {confirmChore.points * logQuantity === 1 ? "pt" : "pts"}
               </span>
               {logDate !== todayString() && (
                 <>
@@ -552,6 +659,31 @@ export function ChoreBoard({
               )}
               ?
             </p>
+
+            {/* Quantity stepper */}
+            <div className="mt-3 flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-700">Qty:</span>
+              <button
+                type="button"
+                onClick={() => setLogQuantity((q) => Math.max(1, q - 1))}
+                disabled={logQuantity <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-30"
+              >
+                -
+              </button>
+              <span className="w-6 text-center text-sm font-semibold tabular-nums">
+                {logQuantity}
+              </span>
+              <button
+                type="button"
+                onClick={() => setLogQuantity((q) => Math.min(10, q + 1))}
+                disabled={logQuantity >= 10}
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-30"
+              >
+                +
+              </button>
+            </div>
+
             <div className="mt-4 flex gap-3">
               <button
                 type="button"
@@ -564,6 +696,7 @@ export function ChoreBoard({
                 <input type="hidden" name="choreId" value={confirmChore.id} />
                 <input type="hidden" name="memberId" value={selectedMemberId} />
                 <input type="hidden" name="loggedAt" value={logDate} />
+                <input type="hidden" name="quantity" value={logQuantity} />
                 <button
                   type="submit"
                   disabled={isPending}
