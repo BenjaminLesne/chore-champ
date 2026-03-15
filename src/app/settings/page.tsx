@@ -76,7 +76,10 @@ export default async function SettingsPage() {
 
         <section className="mt-8">
           <h2 className="text-lg font-semibold text-gray-900">Members</h2>
-          <MemberList members={householdMembers} />
+          <MemberList
+            members={householdMembers}
+            currentMemberId={session.memberId}
+          />
         </section>
 
         <section className="mt-8">

@@ -6,6 +6,7 @@ import {
   createMember,
   updateMember,
   deleteMember,
+  updateMemberRole,
   type MemberActionState,
 } from "@/server/members/actions";
 
@@ -69,7 +70,13 @@ function AddMemberForm() {
   );
 }
 
-function MemberRow({ member }: { member: Member }) {
+function MemberRow({
+  member,
+  currentMemberId,
+}: {
+  member: Member;
+  currentMemberId: number;
+}) {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editState, editAction, editPending] = useActionState(
@@ -80,6 +87,11 @@ function MemberRow({ member }: { member: Member }) {
     deleteMember,
     initialState,
   );
+  const [roleState, roleAction, rolePending] = useActionState(
+    updateMemberRole,
+    initialState,
+  );
+  const isSelf = member.id === currentMemberId;
 
   if (editing) {
     return (
@@ -164,6 +176,36 @@ function MemberRow({ member }: { member: Member }) {
           Edit
         </button>
 
+        {!isSelf && (
+          <form action={roleAction}>
+            <input type="hidden" name="memberId" value={member.id} />
+            <input
+              type="hidden"
+              name="isAdmin"
+              value={member.isAdmin ? "false" : "true"}
+            />
+            <button
+              type="submit"
+              disabled={rolePending}
+              className={
+                member.isAdmin
+                  ? "rounded-md bg-yellow-50 px-3 py-1.5 text-sm font-medium text-yellow-700 hover:bg-yellow-100 disabled:opacity-50"
+                  : "rounded-md bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+              }
+            >
+              {rolePending
+                ? "Updating…"
+                : member.isAdmin
+                  ? "Remove admin"
+                  : "Make admin"}
+            </button>
+          </form>
+        )}
+
+        {roleState.error && (
+          <p className="text-sm text-red-600">{roleState.error}</p>
+        )}
+
         {!member.isAdmin &&
           (confirmDelete ? (
             <div className="flex items-center gap-2">
@@ -203,13 +245,23 @@ function MemberRow({ member }: { member: Member }) {
   );
 }
 
-export function MemberList({ members }: { members: Member[] }) {
+export function MemberList({
+  members,
+  currentMemberId,
+}: {
+  members: Member[];
+  currentMemberId: number;
+}) {
   return (
     <div className="mt-4 space-y-6">
       <AddMemberForm />
       <ul className="space-y-3">
         {members.map((member) => (
-          <MemberRow key={member.id} member={member} />
+          <MemberRow
+            key={member.id}
+            member={member}
+            currentMemberId={currentMemberId}
+          />
         ))}
         {members.length === 0 && (
           <li className="py-4 text-center text-sm text-gray-500">

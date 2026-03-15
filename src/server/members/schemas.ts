@@ -20,6 +20,11 @@ export const deleteMemberSchema = z.object({
   memberId: z.number().int().positive(),
 });
 
+export const updateMemberRoleSchema = z.object({
+  memberId: z.number().int().positive(),
+  isAdmin: z.boolean(),
+});
+
 export type CreateMemberInput = z.infer<typeof createMemberSchema>;
 export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
 export type DeleteMemberInput = z.infer<typeof deleteMemberSchema>;

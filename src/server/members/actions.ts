@@ -9,6 +9,7 @@ import {
   createMemberSchema,
   updateMemberSchema,
   deleteMemberSchema,
+  updateMemberRoleSchema,
 } from "./schemas";
 
 export type MemberActionState = {
@@ -146,6 +147,53 @@ export async function deleteMember(
   }
 
   await db.delete(members).where(eq(members.id, memberId));
+
+  revalidatePath("/settings");
+  return { success: true };
+}
+
+export async function updateMemberRole(
+  _prevState: MemberActionState,
+  formData: FormData,
+): Promise<MemberActionState> {
+  const session = await getSession();
+  if (!session?.isAdmin) {
+    return { error: "You must be logged in as an admin" };
+  }
+
+  const parsed = updateMemberRoleSchema.safeParse({
+    memberId: Number(formData.get("memberId")),
+    isAdmin: formData.get("isAdmin") === "true",
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
+  }
+
+  const { memberId, isAdmin } = parsed.data;
+
+  // Prevent admin from removing their own admin role
+  if (memberId === session.memberId && !isAdmin) {
+    return { error: "You cannot remove your own admin role" };
+  }
+
+  // Verify the member belongs to this household
+  const [existing] = await db
+    .select({ id: members.id })
+    .from(members)
+    .where(
+      and(
+        eq(members.id, memberId),
+        eq(members.householdId, session.householdId),
+      ),
+    )
+    .limit(1);
+
+  if (!existing) {
+    return { error: "Member not found" };
+  }
+
+  await db.update(members).set({ isAdmin }).where(eq(members.id, memberId));
 
   revalidatePath("/settings");
   return { success: true };
