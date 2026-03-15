@@ -4,7 +4,7 @@ import { parseSessionToken } from "@/server/auth/session";
 
 const PUBLIC_PATHS = ["/login", "/register", "/join"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get("session");
 

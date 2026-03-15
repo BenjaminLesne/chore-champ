@@ -4,3 +4,5 @@
 #   src/lib/constants.ts
 #   src/components/ui/*
 #   src/lib/i18n/*
+
+src/proxy.ts
