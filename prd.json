@@ -1,0 +1,80 @@
+{
+  "project": "Chore Champ",
+  "branchName": "ralph/member-stats",
+  "description": "Per-Member Stats on Insights Page - avg chores/day with std deviation and chore breakdown per member",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Add time period selector to insights page",
+      "description": "As a user, I want to choose a time period for the stats so I can look at recent activity or all-time trends.",
+      "acceptanceCriteria": [
+        "Add a period selector component below the existing charts on the /insights page with options: 'Last 30 days', 'Last 3 months', 'Last 6 months', 'All time'",
+        "Selector applies only to the new stats sections (existing weekly/monthly charts keep their own toggle)",
+        "Selected period persists in URL search params via nuqs (e.g. ?period=30d)",
+        "Default period is 'Last 30 days'",
+        "Selector uses the same card/section styling as existing insight sections",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Server-side queries for member stats",
+      "description": "As a developer, I need database queries to compute per-member daily averages, standard deviations, and chore counts for a given time range.",
+      "acceptanceCriteria": [
+        "Create a query function that for each member returns: total chore logs and daily chore counts in the period, so avg and stddev can be computed in JS",
+        "Average is computed as total logs / number of calendar days in the period (zero-chore days count as 0)",
+        "Standard deviation is computed from daily counts across all calendar days in the period",
+        "Create a query function that for each member returns chore counts grouped by chore, sorted descending",
+        "Both queries filter by householdId and the selected time range on choreLogs.loggedAt",
+        "Both queries only include members belonging to the current household",
+        "Only include chores that currently exist (inner join on chores table) — deleted chores are excluded",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Average chores per day per member bar chart",
+      "description": "As a user, I want to see a bar chart comparing the average number of chores per day for each member, with standard deviation, so I can see who's contributing and how consistently.",
+      "acceptanceCriteria": [
+        "Bar chart using Recharts showing one bar per member with avg chores/day as the value",
+        "Standard deviation shown as text label on or next to each bar (e.g. '3.2/day ± 1.5')",
+        "Tooltip on hover shows: member name, exact average (1 decimal), std deviation (1 decimal)",
+        "Chart uses the existing color palette from insights-charts.tsx",
+        "Chart respects the period selector from US-001",
+        "Data is fetched in the server component and passed to the client chart component",
+        "Empty state message when no data exists for the selected period",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Chore breakdown per member with member selector",
+      "description": "As a user, I want to see which chores each member does most, sorted from most to least, so I can understand everyone's contribution patterns.",
+      "acceptanceCriteria": [
+        "Horizontal bar chart showing a selected member's chores sorted by count descending",
+        "Each bar shows the chore icon, chore name, and count",
+        "Each bar uses the chore's configured iconColor for its fill color",
+        "Member selector dropdown to switch between household members",
+        "Chart respects the period selector from US-001",
+        "Data is fetched in the server component and passed to the client chart component",
+        "Empty state message when the selected member has no logs in the period",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}

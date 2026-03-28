@@ -1,0 +1,66 @@
+## Codebase Patterns
+- Use `nuqs` with `parseAsStringLiteral` for type-safe URL enum params; wrap tests with `NuqsTestingAdapter` from `nuqs/adapters/testing`
+- Insights page: server component (`page.tsx`) fetches data, client components render charts
+- Card styling: `rounded-xl border border-gray-200 bg-white p-4 shadow-sm`
+- Toggle button styling: `inline-flex rounded-lg bg-gray-200 p-1` with active state `bg-white text-gray-900 shadow-sm`
+- Chart colors: COLORS array in `insights-charts.tsx` — reuse for consistency
+- DB query functions go in `queries.ts`, pure testable logic in `period-utils.ts` — vitest browser mode can't import Node.js DB modules
+- `getMemberDailyStats(householdId, period)` returns avg/stddev per member; `getMemberChoreBreakdown(householdId, period)` returns chore counts per member
+- Export types (`MemberDailyStat`, `ChoreBreakdownEntry`) from `queries.ts` for UI components
+- Tests use vitest browser mode with `vitest-browser-react` render
+- Pre-existing typecheck errors in scoreboard.test.tsx and past-winners.test.tsx (missing props) — not introduced by this work
+- Recharts `Cell` is deprecated — put `fill` in data objects; Recharts auto-reads the `fill` field
+- `getMemberChoreBreakdown` returns a `Map<number, ...>` — convert to plain `Record<string, ...>` for client component serialization
+- Recharts horizontal bar chart: use `layout="vertical"`, `XAxis type="number"`, `YAxis type="category"`, round bars with `radius={[0, 6, 6, 0]}`
+- eslint `no-unsafe-type-assertion`: avoid `as` casts — use explicit typed props with optional fields + defaults
+- `page.tsx` reads `?period=` search param and passes it to query functions for member stats sections
+
+---
+
+## 2026-03-28 - US-001
+- Implemented period selector component with nuqs URL state management
+- Options: Last 30 days (default), Last 3 months, Last 6 months, All time
+- Exports `usePeriod()` hook for other components to consume the selected period
+- Files changed: `src/app/insights/period-selector.tsx` (new), `src/app/insights/period-selector.test.tsx` (new), `src/app/insights/page.tsx` (modified)
+- **Learnings for future iterations:**
+  - `usePeriod()` hook exported from `period-selector.tsx` — use it in future chart components to read the selected period
+  - Period param stored as `?period=30d|3m|6m|all` in URL
+  - Port 3000 may be occupied by another app; chore-champ dev server needs to be started separately
+  - nuqs testing adapter works with vitest-browser-react via wrapper pattern
+---
+
+## 2026-03-28 - US-002
+- Created query functions for per-member daily stats (avg chores/day + stddev) and chore breakdown
+- Extracted pure date/math logic to `period-utils.ts` for testability (vitest browser mode can't import DB modules)
+- Files changed: `src/app/insights/queries.ts` (new), `src/app/insights/queries.test.ts` (new), `src/app/insights/period-utils.ts` (new), `src/app/insights/period-utils.test.ts` (new)
+- **Learnings for future iterations:**
+  - Vitest browser mode cannot import Node.js-only modules (postgres, Buffer) — extract pure logic to separate files for testing
+  - `computeAvgAndStddev()` from `period-utils.ts` handles zero-chore days in stddev calculation
+  - Query types `MemberDailyStat` and `ChoreBreakdownEntry` exported from `queries.ts` — use in chart components
+  - eslint forbids non-null assertions (`!`) — use optional chaining (`?.`) instead in tests
+---
+
+## 2026-03-28 - US-003
+- Implemented bar chart showing average chores per day per member with standard deviation labels
+- Updated page.tsx to read `period` search param and fetch `getMemberDailyStats` server-side
+- Created `member-avg-chart.tsx` client component with Recharts BarChart, custom tooltip, and bar labels
+- Files changed: `src/app/insights/member-avg-chart.tsx` (new), `src/app/insights/member-avg-chart.test.tsx` (new), `src/app/insights/page.tsx` (modified)
+- **Learnings for future iterations:**
+  - `page.tsx` now accepts `searchParams` prop and reads `?period=` to pass to query functions — US-004 can reuse the same `period` variable
+  - Recharts `Cell` component is deprecated — use `fill` in data objects instead, Recharts picks up the `fill` field automatically
+  - eslint `no-unsafe-type-assertion` rule: avoid `as` casts on Recharts callback props — use explicit prop types with optional fields and defaults instead
+  - `Rectangle` component from recharts can be used as a custom `shape` for rounded bar corners
+---
+
+## 2026-03-28 - US-004
+- Implemented horizontal bar chart showing chore breakdown per member with member selector dropdown
+- Each bar uses the chore's configured iconColor for its fill color
+- Member selector dropdown switches between household members
+- Chart respects the period selector from US-001
+- Data fetched server-side via `getMemberChoreBreakdown`, converted from Map to plain object for client serialization
+- Files changed: `src/app/insights/chore-breakdown-chart.tsx` (new), `src/app/insights/chore-breakdown-chart.test.tsx` (new), `src/app/insights/page.tsx` (modified)
+- **Learnings for future iterations:**
+  - `getMemberChoreBreakdown` returns `Map<number, ChoreBreakdownEntry[]>` — must convert to `Record<string, ...>` for passing to client components (Maps aren't serializable)
+  - For horizontal bar charts in Recharts: use `layout="vertical"`, swap XAxis/YAxis types, and use `radius={[0,6,6,0]}` for rounded right edges
+  - Recharts renders YAxis labels as text elements — when testing, avoid `getByText` for values that appear in both axis labels and bar labels (use negative assertions for empty state instead)
+---
