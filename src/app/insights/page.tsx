@@ -4,6 +4,7 @@ import { getSession } from "@/server/auth/session";
 import { db } from "@/server/db";
 import { chores, members, choreLogs } from "@/server/db/schema";
 import { InsightsCharts } from "./insights-charts";
+import { PeriodSelector } from "./period-selector";
 
 export default async function InsightsPage() {
   const session = await getSession();
@@ -86,6 +87,10 @@ export default async function InsightsPage() {
             weeklyData={weeklyData}
             monthlyData={monthlyData}
           />
+        </div>
+
+        <div className="mt-8">
+          <PeriodSelector />
         </div>
       </div>
     </main>
