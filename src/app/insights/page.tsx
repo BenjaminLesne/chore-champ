@@ -49,10 +49,10 @@ export default async function InsightsPage({
           "log_week",
         ),
         memberId: choreLogs.memberId,
-        totalPoints: sql<number>`coalesce(sum(${chores.points}), 0)`.as(
+        totalPoints: sql<number>`coalesce(sum(${chores.points}), 0)::int`.as(
           "total_points",
         ),
-        choreCount: sql<number>`count(*)`.as("chore_count"),
+        choreCount: sql<number>`count(*)::int`.as("chore_count"),
       })
       .from(choreLogs)
       .innerJoin(members, eq(choreLogs.memberId, members.id))
@@ -74,10 +74,10 @@ export default async function InsightsPage({
           "log_month",
         ),
         memberId: choreLogs.memberId,
-        totalPoints: sql<number>`coalesce(sum(${chores.points}), 0)`.as(
+        totalPoints: sql<number>`coalesce(sum(${chores.points}), 0)::int`.as(
           "total_points",
         ),
-        choreCount: sql<number>`count(*)`.as("chore_count"),
+        choreCount: sql<number>`count(*)::int`.as("chore_count"),
       })
       .from(choreLogs)
       .innerJoin(members, eq(choreLogs.memberId, members.id))

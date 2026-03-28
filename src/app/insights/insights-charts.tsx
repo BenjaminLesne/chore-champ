@@ -39,7 +39,7 @@ const COLORS = [
   "#f97316",
 ];
 
-function buildLineData(
+export function buildLineData(
   members: Member[],
   data: PeriodData[],
   view: "weekly" | "monthly",
@@ -84,7 +84,7 @@ function buildLineData(
   return result;
 }
 
-function buildBarData(
+export function buildBarData(
   members: Member[],
   data: PeriodData[],
   view: "weekly" | "monthly",
