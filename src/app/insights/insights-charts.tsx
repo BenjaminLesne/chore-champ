@@ -106,10 +106,13 @@ export function buildBarData(
   const memberPeriods = new Map<number, number[]>();
   for (const counts of periodCounts.values()) {
     for (const member of members) {
-      if (!memberPeriods.has(member.id)) {
-        memberPeriods.set(member.id, []);
+      const count = counts.get(member.id);
+      if (count !== undefined) {
+        if (!memberPeriods.has(member.id)) {
+          memberPeriods.set(member.id, []);
+        }
+        memberPeriods.get(member.id)?.push(count);
       }
-      memberPeriods.get(member.id)?.push(counts.get(member.id) ?? 0);
     }
   }
 

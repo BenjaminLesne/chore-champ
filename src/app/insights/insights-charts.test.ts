@@ -50,6 +50,22 @@ describe("buildBarData", () => {
     expect(result[0]).toHaveProperty("Shadwa", 0);
   });
 
+  it("excludes months with no activity from the average", () => {
+    // Benjamin active in months 1-3, Shadwa only in month 3
+    const data = [
+      { year: 2026, month: 1, memberId: 1, totalPoints: 50, choreCount: 10 },
+      { year: 2026, month: 2, memberId: 1, totalPoints: 60, choreCount: 12 },
+      { year: 2026, month: 3, memberId: 1, totalPoints: 70, choreCount: 14 },
+      { year: 2026, month: 3, memberId: 2, totalPoints: 40, choreCount: 8 },
+    ];
+
+    const result = buildBarData(members, data, "monthly");
+    // Benjamin: (10+12+14)/3 = 12, not (10+12+14)/3
+    expect(result[0]).toHaveProperty("Benjamin", 12);
+    // Shadwa: 8/1 = 8, not 8/3 ≈ 2.7
+    expect(result[0]).toHaveProperty("Shadwa", 8);
+  });
+
   it("produces numeric results, not string concatenation", () => {
     // Regression test for the ::int cast bug.
     // If choreCount were strings (e.g. from missing ::int cast),
